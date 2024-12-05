@@ -1,3 +1,4 @@
+// g++ Play_perfect_player.cpp -std=c++20 -mcmodel=large -O2
 #include <array>
 #include <cfloat>
 #include <climits>
@@ -30,7 +31,9 @@ class GameOver {
 int progress_calculation(int board[9]) {
   int sum = 0;
   for (int i = 0; i < 9; i++) {
-    sum += 1 << board[i];
+    if(board[i] != 0){
+      sum += 1 << board[i];
+    }
   }
   return sum / 2;
 }
@@ -43,13 +46,14 @@ int main(int argc, char** argv) {
   int seed = atoi(argv[1]);
   int game_count = atoi(argv[2]);
   fs::create_directory("../board_data");
-  string dir = "../board_data/PP";
+  string dir = "../board_data/PP/";
   fs::create_directory(dir);
   readDB2();
   srand(seed);
   list<array<int, 9>> state_list;
   list<array<int, 9>> after_state_list;
-  list<array<double, 5>> eval_list;
+  const int eval_length = 5;
+  list<array<double, eval_length>> eval_list;
   list<GameOver> GameOver_list;
   double score_sum = 0;
   for (int gid = 1; gid <= game_count; gid++) {
@@ -69,12 +73,17 @@ int main(int argc, char** argv) {
         if (play(d, state, &copy)) {
           // int index = to_index(copy.board);
           pp[d] = eval_afterstate(copy.board);
+          // printf("%f ",pp[d]);
+          if(max_evr == pp[d]){
+
+          }
           if (max_evr < pp[d]) {
             max_evr = pp[d];
             selected = d;
           }
         }
       }
+      // printf("\n");
       state_list.push_back(
           array<int, 9>{state.board[0], state.board[1], state.board[2],
                         state.board[3], state.board[4], state.board[5],
@@ -84,61 +93,95 @@ int main(int argc, char** argv) {
           array<int, 9>{state.board[0], state.board[1], state.board[2],
                         state.board[3], state.board[4], state.board[5],
                         state.board[6], state.board[7], state.board[8]});
-      state_list.push_back(array<int, 9>{0, 1, 2, 3, 4, 5, 6, 7, 8});
-      eval_list.push_back(array<double, 5>{pp[0], pp[1], pp[2], pp[3], pp[4]});
+      // const int index = eval_length+1;
+      eval_list.push_back(array<double, eval_length>{pp[0], pp[1], pp[2], pp[3],(double)progress_calculation(state.board)});
       putNewTile(&state);
 
       if (gameOver(state)) {
         GameOver_list.push_back(GameOver(
             turn, gid, progress_calculation(state.board), state.score));
-        // score_sum += state.score;
-        // printf("score = %d\n", state.score);
+        score_sum += state.score;
+        // printf("gameover : %d\n", state.score);
         break;
       }
     }
   }
-  printf("average = %f\n", score_sum / game_count);
-  string file = "state.txt";
-  string fullPath = dir + file;
-  const char* filename = fullPath.c_str();
-  // 書き込みモードでファイルを開く
-  FILE* fp = fopen(filename, "w+");
-  int i = 0;
+  // printf("average = %f\n", score_sum / game_count);
+  string file;
+  string fullPath;
+  const char* filename;
+  FILE* fp;
+  int i;
   auto trun_itr = GameOver_list.begin();
+  file = "state.txt";
+  fullPath = dir + file;
+  filename = fullPath.c_str();
+  fp = fopen(filename, "w+");
+  i = 0;
+  trun_itr = GameOver_list.begin();
   for (auto itr = state_list.begin(); itr != state_list.end(); itr++) {
     i++;
     if ((trun_itr)->gameover_turn == i) {
       i = 0;
-      printf("gameover_turn: %d; game: %d; progress: %d; score: %d\n",
+      fprintf(fp,"gameover_turn: %d; game: %d; progress: %d; score: %d\n",
              (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
              (trun_itr)->score);
+      trun_itr++;
     } else {
       for (int j = 0; j < 9; j++) {
-        printf("%d ", (*itr)[j]);
+        fprintf(fp,"%d ", (*itr)[j]);
       }
-      printf("\n");
+      fprintf(fp,"\n");
     }
   }
-  fclose();
-  string file = "after-state.txt";
-  string fullPath = dir + file;
-  const char* filename = fullPath.c_str();
-  // 書き込みモードでファイルを開く
-  FILE* fp = fopen(filename, "w+");
-  int i = 0;
-  auto trun_itr = GameOver_list.begin();
-  for (auto itr = state_list.begin(); itr != state_list.end(); itr++) {
+  fclose(fp);
+  file = "after-state.txt";
+  fullPath = dir + file;
+  filename = fullPath.c_str();
+  fp = fopen(filename, "w+");
+  i = 0;
+  trun_itr = GameOver_list.begin();
+  for (auto itr = after_state_list.begin(); itr != after_state_list.end(); itr++) {
     i++;
     if ((trun_itr)->gameover_turn == i) {
       i = 0;
-      printf("gameover_turn: %d; game: %d; progress: %d; score: %d\n",
+      fprintf(fp,"gameover_turn: %d; game: %d; progress: %d; score: %d\n",
              (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
              (trun_itr)->score);
+      trun_itr++;
     } else {
       for (int j = 0; j < 9; j++) {
-        printf("%d ", (*itr)[j]);
+        fprintf(fp,"%d ", (*itr)[j]);
       }
-      printf("\n");
+      fprintf(fp,"\n");
     }
   }
+  fclose(fp);
+  file = "eval.txt";
+  fullPath = dir + file;
+  filename = fullPath.c_str();
+  fp = fopen(filename, "w+");
+  i = 0;
+  trun_itr = GameOver_list.begin();
+  for (auto itr = eval_list.begin(); itr != eval_list.end(); itr++) {
+    i++;
+    if ((trun_itr)->gameover_turn == i) {
+      i = 0;
+      fprintf(fp,"gameover_turn: %d; game: %d; progress: %d; score: %d\n",
+             (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
+             (trun_itr)->score);
+      trun_itr++;
+    } else {
+      for (int j = 0; j < eval_length; j++) {
+        if(j+1 >= eval_length){
+          fprintf(fp,"%d ", (int)(*itr)[j]);
+        }
+        else{
+          fprintf(fp,"%f ", (*itr)[j]);
+        }
+      }
+      fprintf(fp,"\n");
+    }
+  }
+  fclose(fp);
 }
