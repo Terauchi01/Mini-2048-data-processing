@@ -75,49 +75,70 @@ int main(int argc, char** argv) {
           }
         }
       }
-      // state_list.push_back(
-      //     array<int, 9>{state.board[0], state.board[1], state.board[2],
-      //                   state.board[3], state.board[4], state.board[5],
-      //                   state.board[6], state.board[7], state.board[8]});
+      state_list.push_back(
+          array<int, 9>{state.board[0], state.board[1], state.board[2],
+                        state.board[3], state.board[4], state.board[5],
+                        state.board[6], state.board[7], state.board[8]});
       play(selected, state, &state);
-      // after_state_list.push_back(
-      //     array<int, 9>{state.board[0], state.board[1], state.board[2],
-      //                   state.board[3], state.board[4], state.board[5],
-      //                   state.board[6], state.board[7], state.board[8]});
-      // state_list.push_back(array<int, 9>{0, 1, 2, 3, 4, 5, 6, 7, 8});
-      // eval_list.push_back(array<double, 5>{pp[0], pp[1], pp[2], pp[3],
-      // pp[4]});
+      after_state_list.push_back(
+          array<int, 9>{state.board[0], state.board[1], state.board[2],
+                        state.board[3], state.board[4], state.board[5],
+                        state.board[6], state.board[7], state.board[8]});
+      state_list.push_back(array<int, 9>{0, 1, 2, 3, 4, 5, 6, 7, 8});
+      eval_list.push_back(array<double, 5>{pp[0], pp[1], pp[2], pp[3], pp[4]});
       putNewTile(&state);
 
       if (gameOver(state)) {
-        // GameOver_list.push_back(GameOver(
-        //     turn, gid, progress_calculation(state.board), state.score));
-        score_sum += state.score;
-        printf("score = %d\n", state.score);
+        GameOver_list.push_back(GameOver(
+            turn, gid, progress_calculation(state.board), state.score));
+        // score_sum += state.score;
+        // printf("score = %d\n", state.score);
         break;
       }
     }
   }
   printf("average = %f\n", score_sum / game_count);
-  // string file = "state.txt";
-  // string fullPath = dir + file;
-  // const char* filename = fullPath.c_str();
-  // // 書き込みモードでファイルを開く
-  // FILE* fp = fopen(filename, "w+");
-  // int i = 0;
-  // auto trun_itr = GameOver_list.begin();
-  // for (auto itr = state_list.begin(); itr != state_list.end(); itr++) {
-  //   i++;
-  //   if ((trun_itr)->gameover_turn == i) {
-  //     i = 0;
-  //     printf("gameover_turn: %d; game: %d; progress: %d; score: %d\n",
-  //            (trun_itr)->gameover_turn, (trun_itr)->game,
-  //            (trun_itr)->progress, (trun_itr)->score);
-  //   } else {
-  //     for (int j = 0; j < 9; j++) {
-  //       printf("%d ", (*itr)[j]);
-  //     }
-  //     printf("\n");
-  //   }
-  // }
+  string file = "state.txt";
+  string fullPath = dir + file;
+  const char* filename = fullPath.c_str();
+  // 書き込みモードでファイルを開く
+  FILE* fp = fopen(filename, "w+");
+  int i = 0;
+  auto trun_itr = GameOver_list.begin();
+  for (auto itr = state_list.begin(); itr != state_list.end(); itr++) {
+    i++;
+    if ((trun_itr)->gameover_turn == i) {
+      i = 0;
+      printf("gameover_turn: %d; game: %d; progress: %d; score: %d\n",
+             (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
+             (trun_itr)->score);
+    } else {
+      for (int j = 0; j < 9; j++) {
+        printf("%d ", (*itr)[j]);
+      }
+      printf("\n");
+    }
+  }
+  fclose();
+  string file = "after-state.txt";
+  string fullPath = dir + file;
+  const char* filename = fullPath.c_str();
+  // 書き込みモードでファイルを開く
+  FILE* fp = fopen(filename, "w+");
+  int i = 0;
+  auto trun_itr = GameOver_list.begin();
+  for (auto itr = state_list.begin(); itr != state_list.end(); itr++) {
+    i++;
+    if ((trun_itr)->gameover_turn == i) {
+      i = 0;
+      printf("gameover_turn: %d; game: %d; progress: %d; score: %d\n",
+             (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
+             (trun_itr)->score);
+    } else {
+      for (int j = 0; j < 9; j++) {
+        printf("%d ", (*itr)[j]);
+      }
+      printf("\n");
+    }
+  }
 }
