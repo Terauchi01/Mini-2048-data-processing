@@ -1,4 +1,4 @@
-# How to use.
+# How to use
 
 1. [uv](https://docs.astral.sh/uv/getting-started/installation/)をインストール。
 2. `uv sync`を実行。ライブラリがインストールされる。
