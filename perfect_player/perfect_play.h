@@ -129,12 +129,3 @@ void eval_afterstates(const state_t &state, double ret[4]) {
 }
 
 double eval_afterstate(int board[9]) { return db[to_index(board)]; }
-int progress_calculation(int board[9]) {
-  int sum = 0;
-  for (int i = 0; i < 9; i++) {
-    if (board[i] != 0) {
-      sum += 1 << board[i];
-    }
-  }
-  return sum / 2;
-}
