@@ -3,7 +3,8 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from common import EvalAndHandProgress, get_eval_and_hand_progress
+
+from .common import EvalAndHandProgress, get_eval_and_hand_progress, moving_average
 
 
 def calc_accuracy(
@@ -21,6 +22,8 @@ def calc_accuracy(
 def plot_accuracy(
     perfect_eval_files: list[Path],
     player_eval_files: list[Path],
+    output: Path,
+    config: dict = {},
 ):
     """
     最善手率をプロットする。
@@ -37,27 +40,30 @@ def plot_accuracy(
         ):
             acc_dict[pp_eval.prg].append(calc_accuracy(pp_eval, pr_eval))
         # 平均を取る
-        acc = {prg: np.mean(err_list) for prg, err_list in acc_dict.items()}
-
-        plt.plot(list(acc.keys()), list(acc.values()), label=perfect_eval_file.stem)
-        plt.xlabel("progress")
-        plt.ylabel("accuracy")
-        plt.legend()
+        acc = {
+            prg: np.mean(err_list)
+            for prg, err_list in sorted(acc_dict.items(), key=lambda x: x[0])
+        }
+        plt.plot(
+            moving_average(list(acc.keys()), 10).tolist(),
+            moving_average(list(acc.values()), 10).tolist(),
+            label=config.get("labels", {}).get(
+                player_eval_file.parent.name, player_eval_file.parent.name
+            ),
+        )
+    plt.xlabel("progress")
+    plt.ylabel("accuracy")
+    plt.legend()
+    plt.savefig(output)
     plt.show()
 
 
 if __name__ == "__main__":
     plot_accuracy(
         perfect_eval_files=[
-            # Path("PP/PP_eval_NN-DEEP.txt"),
-            # Path("PP/PP_eval_NT6.txt"),
-            # Path("PP/PP_eval_NT4.txt"),
-            Path("board_data/test2/eval.txt"),
+            Path("board_data/PP/eval-state-CNN_DEEP.txt"),
         ],
         player_eval_files=[
-            Path("board_data/test/eval.txt"),
-            # Path("NT6/NT6_eval_PP.txt"),
-            # Path("NN-DEEP/NN-DEEP_eval_PP.txt"),
-            # Path("NT4/NT4_eval_PP.txt"),
+            Path("board_data/CNN_DEEP/eval.txt"),
         ],
     )

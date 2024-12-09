@@ -2,6 +2,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
+
 
 @dataclass
 class EvalAndHandProgress:
@@ -23,7 +25,7 @@ def get_eval_and_hand_progress(eval_file: Path):
     評価値、選択した手、progressを取得する。
     """
     eval_txt = eval_file.read_text("utf-8")
-    subed_eval_txt = re.sub(r"game.*\n", "", eval_txt)
+    subed_eval_txt = re.sub(r"game.*\n?", "", eval_txt)
     eval_lines = subed_eval_txt.splitlines()
     eval_and_hand_progress = [
         EvalAndHandProgress(
@@ -33,3 +35,7 @@ def get_eval_and_hand_progress(eval_file: Path):
         for line in eval_lines
     ]
     return eval_and_hand_progress
+
+
+def moving_average(data, window_size):
+    return np.convolve(data, np.ones(window_size) / window_size, mode="valid")
