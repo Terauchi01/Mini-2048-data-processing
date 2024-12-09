@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 using namespace std;
 int main(int argc, char** argv) {
   if (argc < 1 + 1) {
-    fprintf(stderr, "Usage: playgreedy <load-player-name> <EV-file>\n");
+    fprintf(stderr, "Usage: playgreedy <load-player-name>\n");
     exit(1);
   }
   string dname = argv[1];
