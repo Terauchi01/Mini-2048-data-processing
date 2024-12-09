@@ -1,4 +1,4 @@
-// g++ Play_perfect_player.cpp -std=c++20 -mcmodel=large -O2
+// g++ Play_perfect_player.cevals -std=c++20 -mcmodel=large -O2
 #include <array>
 #include <cfloat>
 #include <climits>
@@ -12,8 +12,11 @@
 namespace fs = std::filesystem;
 using namespace std;
 
+#include "4tuples_sym.h"
+#include "6tuples_sym.h"
 #include "Game2048_3_3.h"
-#include "perfect_play.h"
+#include "fread.h"
+#include "play_table.h"
 
 class GameOver {
  public:
@@ -39,15 +42,29 @@ int progress_calculation(int board[9]) {
 }
 int main(int argc, char** argv) {
   if (argc < 2 + 1) {
-    fprintf(stderr, "Usage: playgreedy <seed> <game_counts>\n");
+    fprintf(stderr, "Usage: playgreedy <seed> <game_counts> <evfile>\n");
     exit(1);
   }
   int seed = atoi(argv[1]);
   int game_count = atoi(argv[2]);
+  char* evfile = argv[3];
+  string number(1, evfile[0]);
   fs::create_directory("../board_data");
-  string dir = "../board_data/PP/";
+  string dir = "../board_data/NT" + number + "/";
   fs::create_directory(dir);
-  readDB2();
+
+  double average = 0;
+  FILE* fp = fopen(evfile, "rb");
+  if (fp == NULL) {
+    fprintf(stderr, "cannot open file: %s\n", evfile);
+    exit(1);
+  }
+  if (number == "4") {
+    NT4::readEvs(fp);
+  } else {
+    NT6::readEvs(fp);
+  }
+  fclose(fp);
   srand(seed);
   list<array<int, 9>> state_list;
   list<array<int, 9>> after_state_list;
@@ -64,19 +81,23 @@ int main(int argc, char** argv) {
       double max_evr = -DBL_MAX;
       int selected = -1;
       const int n = 5;
-      double pp[n];
+      double evals[n];
       for (int i = 0; i < n; i++) {
-        pp[i] = -1.0e10;
+        evals[i] = -1.0e10;
       }
       for (int d = 0; d < 4; d++) {
         if (play(d, state, &copy)) {
           // int index = to_index(copy.board);
-          pp[d] = eval_afterstate(copy.board);
-          // printf("%f ",pp[d]);
-          if (max_evr == pp[d]) {
+          if (number == "4") {
+            evals[d] = NT4::calcEv(copy.board);
+          } else {
+            evals[d] = NT6::calcEv(copy.board);
           }
-          if (max_evr < pp[d]) {
-            max_evr = pp[d];
+          // printf("%f ",evals[d]);
+          if (max_evr == evals[d]) {
+          }
+          if (max_evr < evals[d]) {
+            max_evr = evals[d];
             selected = d;
           }
         }
@@ -93,7 +114,7 @@ int main(int argc, char** argv) {
                         state.board[6], state.board[7], state.board[8]});
       // const int index = eval_length+1;
       eval_list.push_back(array<double, eval_length>{
-          pp[0], pp[1], pp[2], pp[3],
+          evals[0], evals[1], evals[2], evals[3],
           (double)progress_calculation(state.board)});
       putNewTile(&state);
 
@@ -110,7 +131,7 @@ int main(int argc, char** argv) {
   string file;
   string fullPath;
   const char* filename;
-  FILE* fp;
+  // FILE* fp;
   int i;
   auto trun_itr = GameOver_list.begin();
   file = "state.txt";
