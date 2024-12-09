@@ -31,7 +31,7 @@ class GameOver {
 int progress_calculation(int board[9]) {
   int sum = 0;
   for (int i = 0; i < 9; i++) {
-    if(board[i] != 0){
+    if (board[i] != 0) {
       sum += 1 << board[i];
     }
   }
@@ -74,8 +74,7 @@ int main(int argc, char** argv) {
           // int index = to_index(copy.board);
           pp[d] = eval_afterstate(copy.board);
           // printf("%f ",pp[d]);
-          if(max_evr == pp[d]){
-
+          if (max_evr == pp[d]) {
           }
           if (max_evr < pp[d]) {
             max_evr = pp[d];
@@ -94,7 +93,9 @@ int main(int argc, char** argv) {
                         state.board[3], state.board[4], state.board[5],
                         state.board[6], state.board[7], state.board[8]});
       // const int index = eval_length+1;
-      eval_list.push_back(array<double, eval_length>{pp[0], pp[1], pp[2], pp[3],(double)progress_calculation(state.board)});
+      eval_list.push_back(array<double, eval_length>{
+          pp[0], pp[1], pp[2], pp[3],
+          (double)progress_calculation(state.board)});
       putNewTile(&state);
 
       if (gameOver(state)) {
@@ -123,15 +124,15 @@ int main(int argc, char** argv) {
     i++;
     if ((trun_itr)->gameover_turn == i) {
       i = 0;
-      fprintf(fp,"gameover_turn: %d; game: %d; progress: %d; score: %d\n",
-             (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
-             (trun_itr)->score);
+      fprintf(fp, "gameover_turn: %d; game: %d; progress: %d; score: %d\n",
+              (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
+              (trun_itr)->score);
       trun_itr++;
     } else {
       for (int j = 0; j < 9; j++) {
-        fprintf(fp,"%d ", (*itr)[j]);
+        fprintf(fp, "%d ", (*itr)[j]);
       }
-      fprintf(fp,"\n");
+      fprintf(fp, "\n");
     }
   }
   fclose(fp);
@@ -141,19 +142,20 @@ int main(int argc, char** argv) {
   fp = fopen(filename, "w+");
   i = 0;
   trun_itr = GameOver_list.begin();
-  for (auto itr = after_state_list.begin(); itr != after_state_list.end(); itr++) {
+  for (auto itr = after_state_list.begin(); itr != after_state_list.end();
+       itr++) {
     i++;
     if ((trun_itr)->gameover_turn == i) {
       i = 0;
-      fprintf(fp,"gameover_turn: %d; game: %d; progress: %d; score: %d\n",
-             (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
-             (trun_itr)->score);
+      fprintf(fp, "gameover_turn: %d; game: %d; progress: %d; score: %d\n",
+              (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
+              (trun_itr)->score);
       trun_itr++;
     } else {
       for (int j = 0; j < 9; j++) {
-        fprintf(fp,"%d ", (*itr)[j]);
+        fprintf(fp, "%d ", (*itr)[j]);
       }
-      fprintf(fp,"\n");
+      fprintf(fp, "\n");
     }
   }
   fclose(fp);
@@ -167,20 +169,19 @@ int main(int argc, char** argv) {
     i++;
     if ((trun_itr)->gameover_turn == i) {
       i = 0;
-      fprintf(fp,"gameover_turn: %d; game: %d; progress: %d; score: %d\n",
-             (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
-             (trun_itr)->score);
+      fprintf(fp, "gameover_turn: %d; game: %d; progress: %d; score: %d\n",
+              (trun_itr)->gameover_turn, (trun_itr)->game, (trun_itr)->progress,
+              (trun_itr)->score);
       trun_itr++;
     } else {
       for (int j = 0; j < eval_length; j++) {
-        if(j+1 >= eval_length){
-          fprintf(fp,"%d ", (int)(*itr)[j]);
-        }
-        else{
-          fprintf(fp,"%f ", (*itr)[j]);
+        if (j + 1 >= eval_length) {
+          fprintf(fp, "%d ", (int)(*itr)[j]);
+        } else {
+          fprintf(fp, "%f ", (*itr)[j]);
         }
       }
-      fprintf(fp,"\n");
+      fprintf(fp, "\n");
     }
   }
   fclose(fp);
