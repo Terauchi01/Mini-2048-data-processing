@@ -1,3 +1,4 @@
+#include <array>
 #include <cfloat>
 #include <filesystem>
 #include <iostream>
@@ -10,7 +11,7 @@
 namespace fs = std::filesystem;
 using namespace std;
 int main(int argc, char** argv) {
-  if (argc < 1 + 1) {
+  if (argc < 2 + 1) {
     fprintf(stderr, "Usage: playgreedy <load-player-name> <EV-file>\n");
     exit(1);
   }
@@ -35,7 +36,7 @@ int main(int argc, char** argv) {
   fs::create_directory(dir);
 
   read_state_one_game(s);
-  string file = "eval-afterstate-" + dname + ".txt";
+  string file = "eval-after-state-" + dname + ".txt";
   string fullPath = dir + file;
   const char* filename = fullPath.c_str();
   fp = fopen(filename, "w+");

@@ -1,3 +1,4 @@
+#include <array>
 #include <cfloat>
 #include <filesystem>
 #include <iostream>
@@ -19,7 +20,7 @@ int progress_calculation(int board[9]) {
   return sum / 2;
 }
 int main(int argc, char** argv) {
-  if (argc < 1 + 1) {
+  if (argc < 2 + 1) {
     fprintf(stderr, "Usage: playgreedy <load-player-name> <EV-file>\n");
     exit(1);
   }

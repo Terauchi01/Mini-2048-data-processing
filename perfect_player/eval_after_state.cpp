@@ -1,7 +1,7 @@
 #include <cfloat>
+#include <climits>
 #include <filesystem>
 #include <iostream>
-#include <climits>
 
 #include "Game2048_3_3.h"
 #include "fread.h"
@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   fs::create_directory(dir);
 
   read_state_one_game(s);
-  string file = "eval-afterstate-" + dname + ".txt";
+  string file = "eval-after-state-" + dname + ".txt";
   string fullPath = dir + file;
   const char* filename = fullPath.c_str();
   FILE* fp = fopen(filename, "w+");

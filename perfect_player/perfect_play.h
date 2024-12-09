@@ -1,13 +1,14 @@
 #pragma once
+#include <algorithm>
+#include <array>
 #include <cstdio>
 using namespace std;
 // #include "Game2048_3_3.h"
 
 const size_t DBSIZE = 619996139 + 1;
 extern double db[DBSIZE];
-#include <cstdio>
 
-#include "perfect_play.h"
+// #include "perfect_play.h"
 using namespace std;
 #include "Game2048_3_3.h"
 int to_index(const int board[9]) {
@@ -60,8 +61,9 @@ int to_index(const int board[9]) {
     int j = rotate3[7][i];
     sindex7 += board[j] * pow11[i];
   }
-  return std::min(
-      {sindex0, sindex1, sindex2, sindex3, sindex4, sindex5, sindex6, sindex7});
+  std::array<long long, 8> indices = {sindex0, sindex1, sindex2, sindex3,
+                                      sindex4, sindex5, sindex6, sindex7};
+  return *std::min_element(indices.begin(), indices.end());
 }
 double db[DBSIZE];
 
