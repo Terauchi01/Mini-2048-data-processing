@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
   fs::create_directory(dir);
 
   read_state_one_game(s);
-  string file = "eval-state-" + eval_player + ".txt";
+  string file = "eval-state-" + dname + ".txt";
   string fullPath = dir + file;
   const char* filename = fullPath.c_str();
   FILE* fp = fopen(filename, "w+");
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
           fprintf(fp, "-10000000000.000000 ");
         }
         if (d == 3) {
-          fprintf(fp, "\n");
+          fprintf(fp, "%f\n", progress_calculation(state.board));
         }
       }
     }

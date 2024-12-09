@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
   fs::create_directory(dir);
 
   read_state_one_game(s);
-  string file = "eval-state-" + eval_player + ".txt";
+  string file = "eval-afterstate-" + dname + ".txt";
   string fullPath = dir + file;
   const char* filename = fullPath.c_str();
   FILE* fp = fopen(filename, "w+");

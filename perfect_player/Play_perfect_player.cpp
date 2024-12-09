@@ -28,15 +28,6 @@ class GameOver {
         progress(progress_init),
         score(score_init) {}
 };
-int progress_calculation(int board[9]) {
-  int sum = 0;
-  for (int i = 0; i < 9; i++) {
-    if (board[i] != 0) {
-      sum += 1 << board[i];
-    }
-  }
-  return sum / 2;
-}
 
 int main(int argc, char** argv) {
   if (argc < 2 + 1) {
