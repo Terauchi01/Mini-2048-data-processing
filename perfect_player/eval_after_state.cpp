@@ -1,6 +1,7 @@
 #include <cfloat>
 #include <filesystem>
 #include <iostream>
+#include <climits>
 
 #include "Game2048_3_3.h"
 #include "fread.h"
@@ -17,7 +18,7 @@ int main(int argc, char** argv) {
   string eval_player = "PP";
   double average = 0;
   readDB2();
-  string s = "../board_data/" + dname + "/state.txt";
+  string s = "../board_data/" + dname + "/after-state.txt";
   fs::create_directory("../board_data");
   string dir = "../board_data/" + eval_player + "/";
   fs::create_directory(dir);

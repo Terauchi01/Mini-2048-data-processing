@@ -1,6 +1,7 @@
 #include <cfloat>
 #include <filesystem>
 #include <iostream>
+#include <climits>
 
 #include "Game2048_3_3.h"
 #include "fread.h"
@@ -46,7 +47,7 @@ int main(int argc, char** argv) {
           fprintf(fp, "-10000000000.000000 ");
         }
         if (d == 3) {
-          fprintf(fp, "%f\n", progress_calculation(state.board));
+          fprintf(fp, "%d\n", progress_calculation(state.board));
         }
       }
     }
