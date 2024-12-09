@@ -114,7 +114,7 @@ elif args.graph == "err-rel":
     error_rel.plot_rel_error(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
-        output_name=output_dir / output_name,
+        output=output_dir / output_name,
     )
 elif args.graph == "err-abs":
     output_name = args.output if args.output else "error_abs.pdf"
@@ -122,7 +122,7 @@ elif args.graph == "err-abs":
     error_abs.plot_abs_error(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
-        output_name=output_dir / output_name,
+        output=output_dir / output_name,
     )
 elif args.graph == "surv":
     output_name = args.output if args.output else "survival.pdf"
@@ -137,7 +137,7 @@ elif args.graph == "surv":
     )
     survival.plot_survival_rate(
         state_files=state_files,
-        output_name=output_dir / output_name,
+        output=output_dir / output_name,
     )
 elif args.graph == "scatter":
     output_name = args.output if args.output else "scatter.pdf"
@@ -148,5 +148,5 @@ elif args.graph == "scatter":
     scatter.plot_scatter(
         perfect_eval_file=args.perfect_data[0],
         player_eval_file=args.player_data[0],
-        output_name=output_dir / output_name,
+        output=output_dir / output_name,
     )
