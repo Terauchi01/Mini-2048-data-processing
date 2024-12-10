@@ -2,32 +2,34 @@
 
 ## python 注意点
 
-uv を用いてpythonのライブラリの管理を行っています。
-詳しい内容は[このREADME](./graph/README.md)を確認してください。
+uv を用いて python のライブラリの管理を行っています。
+詳しい内容は[この README](./graph/README.md)を確認してください。
 
 ## perfect_player 注意点
 
 perfect_player はメモリ不足が懸念されるので、サーバで動かしてください。
 それ以外の環境の場合動作の保証はしません。
-詳しい内容は[このREADME](./perfect_player/README.md)を確認してください。
+詳しい内容は[この README](./perfect_player/README.md)を確認してください。
 
-## NT注意点
+## NT 注意点
 
-4tuple_data_9.datのような各タプルの学習済みファイルが必要です。
-詳しい内容は[このREADME](./perfect_player/README.md)を確認してください。
+4tuple_data_9.dat のような各タプルの学習済みファイルが必要です。
+詳しい内容は[この README](./perfect_player/README.md)を確認してください。
 
 ## TODO
 
-- [ ] グラフプロット用コードを記述する。
+- [x] グラフプロット用コードを記述する。
+
   - [x] accuracy
   - [x] error-relative
   - [x] error-absolute
   - [x] survival-rate
-  - [ ] scatter
+  - [x] scatter
 
-- [ ] グラフプロット用コードをマージする。
-  - [ ] `__main__.py`を完成させる。
-  - [ ] 各コードでプロットできるようにする。
+- [x] グラフプロット用コードをマージする。
 
-- [ ] 他のplayerのstateをPerfect Playerに食わせて、evalを出力するコードを記述する。(PP/eval_state_[player].txt)
-- [ ] 他のplayerのafterstateをPerfect Playerに食わせて、evalを出力するコードを記述する。 (PP/eval_saftertate_[player].txt)
+  - [x] `__main__.py`を完成させる。
+  - [x] 各コードでプロットできるようにする。
+
+- [x] 他の player の state を Perfect Player に食わせて、eval を出力するコードを記述する。(PP/eval*state*[player].txt)
+- [x] 他の player の afterstate を Perfect Player に食わせて、eval を出力するコードを記述する。 (PP/eval*saftertate*[player].txt)

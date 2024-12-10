@@ -8,6 +8,7 @@ from . import accuracy, error_abs, error_rel, scatter, survival
 BASE_DIR = Path(__file__).resolve().parent
 board_dir = BASE_DIR.parent / "board_data"
 board_data_dirs = [d for d in board_dir.iterdir() if d.is_dir()]
+__version__ = "1.0.0"
 
 
 def read_config(path: Path) -> dict:
@@ -36,7 +37,8 @@ def get_state_eval_files():
         [
             d
             for d in board_dir.glob("PP/eval-state*.txt")
-            if not re.search(exclude_match, str(d)) and re.search(include_match, str(d))
+            if not re.search(exclude_match, str(d))
+            and re.search(intersection_match, str(d))
         ]
         if args.perfect_data is None
         else [Path(d) for d in args.perfect_data]
@@ -45,7 +47,8 @@ def get_state_eval_files():
         [
             d
             for d in board_dir.glob("**/eval.txt")
-            if not re.search(exclude_match, str(d)) and re.search(include_match, str(d))
+            if not re.search(exclude_match, str(d))
+            and re.search(intersection_match, str(d))
         ]
         if args.player_data is None
         else [Path(d) for d in args.player_data]
@@ -59,7 +62,8 @@ def get_eval_state_and_after_state_files():
         [
             d
             for d in board_dir.glob("PP/eval-after-state*.txt")
-            if not re.search(exclude_match, str(d)) and re.search(include_match, str(d))
+            if not re.search(exclude_match, str(d))
+            and re.search(intersection_match, str(d))
         ]
         if args.perfect_data is None
         else [Path(d) for d in args.perfect_data]
@@ -68,7 +72,8 @@ def get_eval_state_and_after_state_files():
         [
             d
             for d in board_dir.glob("**/eval.txt")
-            if not re.search(exclude_match, str(d)) and re.search(include_match, str(d))
+            if not re.search(exclude_match, str(d))
+            and re.search(intersection_match, str(d))
         ]
         if args.player_data is None
         else [Path(d) for d in args.player_data]
@@ -78,7 +83,9 @@ def get_eval_state_and_after_state_files():
 
 
 arg_parser = argparse.ArgumentParser(
-    prog="uv run -m graph", description="グラフを描画する。"
+    prog="graph",
+    usage="uv run python -m %(prog)s [options]",
+    description="指定したオプションに応じてグラフを描画するプログラム。詳細はREADME.mdを参照。",
 )
 arg_parser.add_argument(
     "graph",
@@ -99,7 +106,7 @@ file_group.add_argument(
     help="除外するディレクトリ名を指定する。",
 )
 file_group.add_argument(
-    "--include",
+    "--intersection",
     nargs="+",
     default=[],
     help="対象を指定したディレクトリのみに絞る。",
@@ -120,13 +127,20 @@ player_group.add_argument(
 arg_parser.add_argument(
     "--config",
     type=str,
-    help="設定ファイルのパスを指定する。",
+    help="設定ファイルのパスを指定する。現在は未使用。",
 )
-
+arg_parser.add_argument(
+    "--version",
+    "-v",
+    action="version",
+    version=f"""
+    %(prog)s version {__version__}
+""",
+)
 
 args = arg_parser.parse_args()
 exclude_match = re.compile("|".join(args.exclude + ["sample"]))
-include_match = re.compile("|".join(args.include))
+intersection_match = re.compile("|".join(args.intersection))
 dirs = [d for d in board_data_dirs if not re.search(exclude_match, str(d))]
 output_dir = BASE_DIR.parent / "output"
 output_dir.mkdir(exist_ok=True)
