@@ -18,12 +18,25 @@ def write_config(path: Path, config: dict) -> None:
     path.write_text(json.dumps(config, indent=4, ensure_ascii=False), "utf-8")
 
 
+def get_config():
+    if config_path.exists():
+        config = read_config(config_path)
+        # config["labels"]に存在しないディレクトリがあれば追加
+        for d in board_data_dirs:
+            if d.name not in config["labels"]:
+                config["labels"][d.name] = d.name
+    else:
+        config = {"labels": {d.name: d.name for d in board_data_dirs}}
+    write_config(config_path, config)
+    return config
+
+
 def get_state_eval_files():
     pp_eval_files = (
         [
             d
             for d in board_dir.glob("PP/eval-state*.txt")
-            if not re.search(exclude_match, str(d))
+            if not re.search(exclude_match, str(d)) and re.search(include_match, str(d))
         ]
         if args.perfect_data is None
         else [Path(d) for d in args.perfect_data]
@@ -32,12 +45,35 @@ def get_state_eval_files():
         [
             d
             for d in board_dir.glob("**/eval.txt")
-            if not re.search(exclude_match, str(d)) and "PP" not in str(d)
+            if not re.search(exclude_match, str(d)) and re.search(include_match, str(d))
         ]
         if args.player_data is None
         else [Path(d) for d in args.player_data]
     )
-    assert len(pp_eval_files) == len(pr_eval_files), "データ数が一致しません。"
+    assert len(pp_eval_files) == len(pr_eval_files), "ファイル数が一致しません。"
+    return pp_eval_files, pr_eval_files
+
+
+def get_eval_state_and_after_state_files():
+    pp_eval_files = (
+        [
+            d
+            for d in board_dir.glob("PP/eval-after-state*.txt")
+            if not re.search(exclude_match, str(d)) and re.search(include_match, str(d))
+        ]
+        if args.perfect_data is None
+        else [Path(d) for d in args.perfect_data]
+    )
+    pr_eval_files = (
+        [
+            d
+            for d in board_dir.glob("**/eval.txt")
+            if not re.search(exclude_match, str(d)) and re.search(include_match, str(d))
+        ]
+        if args.player_data is None
+        else [Path(d) for d in args.player_data]
+    )
+    assert len(pp_eval_files) == len(pr_eval_files), "ファイル数が一致しません。"
     return pp_eval_files, pr_eval_files
 
 
@@ -55,11 +91,18 @@ arg_parser.add_argument(
     type=str,
     help="出力するファイルを指定する。",
 )
-arg_parser.add_argument(
+file_group = arg_parser.add_mutually_exclusive_group()
+file_group.add_argument(
     "--exclude",
     nargs="+",
     default=[],
     help="除外するディレクトリ名を指定する。",
+)
+file_group.add_argument(
+    "--include",
+    nargs="+",
+    default=[],
+    help="対象を指定したディレクトリのみに絞る。",
 )
 player_group = arg_parser.add_argument_group(
     "データ指定オプション", "コマンドラインから手動でデータを指定する。"
@@ -83,21 +126,13 @@ arg_parser.add_argument(
 
 args = arg_parser.parse_args()
 exclude_match = re.compile("|".join(args.exclude + ["sample"]))
+include_match = re.compile("|".join(args.include))
 dirs = [d for d in board_data_dirs if not re.search(exclude_match, str(d))]
 output_dir = BASE_DIR.parent / "output"
 output_dir.mkdir(exist_ok=True)
 
-# config_path = BASE_DIR / "config.json"
+config_path = BASE_DIR / "config.json"
 
-# if config_path.exists():
-#     config = read_config(config_path)
-#     # config["labels"]に存在しないディレクトリがあれば追加
-#     for d in board_data_dirs:
-#         if d.name not in config["labels"]:
-#             config["labels"][d.name] = d.name
-# else:
-#     config = {"labels": {d.name: d.name for d in board_data_dirs}}
-# write_config(config_path, config)
 
 if args.graph == "acc":
     output_name = args.output if args.output else "accuracy.pdf"
@@ -141,12 +176,9 @@ elif args.graph == "surv":
     )
 elif args.graph == "scatter":
     output_name = args.output if args.output else "scatter.pdf"
-    if args.perfect_data is None or args.player_data is None:
-        raise ValueError("""パーフェクトプレイヤとプレイヤーのデータを指定してください。
-        --perfect_data, --player_data
-""")
+    pp_eval_files, pr_eval_files = get_eval_state_and_after_state_files()
     scatter.plot_scatter(
-        perfect_eval_file=args.perfect_data[0],
-        player_eval_file=args.player_data[0],
+        perfect_eval_files=pp_eval_files,
+        player_eval_files=pr_eval_files,
         output=output_dir / output_name,
     )

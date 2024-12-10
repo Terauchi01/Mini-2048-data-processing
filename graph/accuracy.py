@@ -33,6 +33,11 @@ def plot_accuracy(
     ):
         pp_eval_and_hand_progress = get_eval_and_hand_progress(perfect_eval_file)
         pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
+
+        assert (
+            len(pp_eval_and_hand_progress) == len(pr_eval_and_hand_progress)
+        ), f"データ数が異なります。{len(pp_eval_and_hand_progress)=}, {len(pr_eval_and_hand_progress)=}"
+
         acc_dict = defaultdict(list)
 
         for pp_eval, pr_eval in zip(

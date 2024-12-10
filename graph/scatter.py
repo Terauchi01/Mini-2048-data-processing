@@ -15,45 +15,52 @@ def get_evals(eval_file: Path):
 
 
 def plot_scatter(
-    perfect_eval_file: Path,
-    player_eval_file: Path,
+    perfect_eval_files: list[Path],
+    player_eval_files: list[Path],
     output: Path,
     config: dict = {},
 ):
     """
     パーフェクトプレイヤとプレイヤーの評価値の散布図をプロットする。
     """
-    pp_evals = get_evals(perfect_eval_file)
-    pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
+    for i, (perfect_eval_file, player_eval_file) in enumerate(
+        zip(sorted(perfect_eval_files), sorted(player_eval_files))
+    ):
+        pp_evals = get_evals(perfect_eval_file)
+        pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
 
-    scatter_data = [
-        (ev, pr_eval.evals[pr_eval.idx[0]])
-        for ev, pr_eval in zip(pp_evals, pr_eval_and_hand_progress)
-    ]
-    # 1000個のデータをランダムで取得
-    scatter_data = random.sample(scatter_data, 1000)
+        assert len(pp_evals) == len(
+            pr_eval_and_hand_progress
+        ), f"データ数が異なります。{len(pp_evals)=}, {len(pr_eval_and_hand_progress)=}"
 
-    # 散布図のdotの大きさを指定
-    plt.scatter(
-        [d[0] for d in scatter_data],
-        [d[1] for d in scatter_data],
-        s=5,
-    )
-    # 直線を引く
-    plt.plot(
-        [0, 6000],
-        [0, 6000],
-        color="gray",
-        linestyle="dashed",
-    )
-    plt.xlabel("perfect")
-    plt.ylabel(
-        config.get("labels", {}).get(
-            player_eval_file.parent.name, player_eval_file.parent.name
+        scatter_data = [
+            (ev, pr_eval.evals[pr_eval.idx[0]])
+            for ev, pr_eval in zip(pp_evals, pr_eval_and_hand_progress)
+        ]
+        # 1000個のデータをランダムで取得
+        scatter_data = random.sample(scatter_data, 1000)
+
+        # 散布図のdotの大きさを指定
+        plt.scatter(
+            [d[0] for d in scatter_data],
+            [d[1] for d in scatter_data],
+            s=5,
         )
-    )
-    plt.savefig(output)
-    plt.show()
+        # 直線を引く
+        plt.plot(
+            [0, 6000],
+            [0, 6000],
+            color="gray",
+            linestyle="dashed",
+        )
+        plt.xlabel("perfect")
+        plt.ylabel(
+            config.get("labels", {}).get(
+                player_eval_file.parent.name, player_eval_file.parent.name
+            )
+        )
+        plt.savefig(output.with_stem(f"{output.stem}_{i}"))
+        plt.show()
 
 
 if __name__ == "__main__":
