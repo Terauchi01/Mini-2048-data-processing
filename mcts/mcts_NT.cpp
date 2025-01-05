@@ -68,8 +68,9 @@ int main(int argc, char** argv) {
   bool Boltzmann = atoi(argv[9]);
   bool expectimax = atoi(argv[10]);
 
-  string baseDir = "../board_data/MCTS/Boltzmann" + to_string(Boltzmann) +
-                   "_expectimax" + to_string(expectimax);
+  std::string baseDir = "../board_data/MCTS" + std::string(1, evfile[0]) +
+                        "/Boltzmann" + std::to_string(Boltzmann) +
+                        "_expectimax" + std::to_string(expectimax);
 
   // ディレクトリ作成
   try {
@@ -142,9 +143,9 @@ int main(int argc, char** argv) {
   }
 
   // 出力処理
-  ofstream stateFile(baseDir + "state.txt");
-  ofstream afterStateFile(baseDir + "after-state.txt");
-  ofstream evalFile(baseDir + "eval.txt");
+  ofstream stateFile(baseDir + "/state.txt");
+  ofstream afterStateFile(baseDir + "/after-state.txt");
+  ofstream evalFile(baseDir + "/eval.txt");
 
   auto trun_itr = GameOver_list.begin();
   int i = 0;
