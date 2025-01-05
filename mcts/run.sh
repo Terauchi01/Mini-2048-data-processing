@@ -8,7 +8,7 @@ joblist=()
 
 # 固定設定
 seed=0
-game=1
+game=10000
 tuple=(4 6)
 simu=(3 50 400 3000 15000 55000)
 debug=0
