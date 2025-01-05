@@ -8,9 +8,9 @@ joblist=()
 
 # 固定設定
 seed=0
-game=10000
+game=1
 tuple=(4 6)
-simu=(1 2 3 4 5 6)
+simu=(3 50 400 3000 15000 55000)
 debug=0
 randamTrun=(1 2)
 expand_count=(1 50)
