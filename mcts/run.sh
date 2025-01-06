@@ -8,7 +8,7 @@ joblist=()
 
 # 固定設定
 seed=0
-game=10000
+game=1000
 tuple=(4 6)
 simu=(3 50 400 3000 15000 55000)
 debug=0
@@ -24,7 +24,7 @@ expectimax_values=(0 1)
 data_file_prefix="tuple_data_9.dat"
 
 # 実行ファイル
-executables=("mcts_NT4" "mcts_NT6")
+executable="mcts_NT"
 
 # 出力フォルダ
 output_dir="results"
@@ -60,15 +60,13 @@ for tuple_value in "${tuple[@]}"; do
                 for depth in "${simu[@]}"; do
                     for random_turn in "${randamTrun[@]}"; do
                         for expand in "${expand_count[@]}"; do
-                            for executable in "${executables[@]}"; do
-                                output_file="${output_dir}/${executable}_tuple${tuple_value}_c${c}_boltzmann${boltzmann}_expectimax${expectimax}_depth${depth}_randomTurn${random_turn}_expand${expand}.log"
+                            output_file="${output_dir}/${executable}_tuple${tuple_value}_c${c}_boltzmann${boltzmann}_expectimax${expectimax}_depth${depth}_randomTurn${random_turn}_expand${expand}.log"
 
-                                # 実行とプロセス管理
-                                ./"$executable" "$seed" "$game" "${tuple_value}tuple_data_9.dat" "$depth" "$random_turn" "$expand" "$debug" "$c" "$boltzmann" "$expectimax" >"$output_file" &
-                                joblist+=($!) # バックグラウンドプロセスのPIDを記録
-                                wait_for_jobs # プロセス数を制限
-                                echo "Launched: $executable with tuple=$tuple_value, c=$c, boltzmann=$boltzmann, expectimax=$expectimax, depth=$depth, randomTurn=$random_turn, expand=$expand"
-                            done
+                            # 実行とプロセス管理
+                            ./"${executable}${tuple_value}" "$seed" "$game" "${tuple_value}tuple_data_9.dat" "$depth" "$random_turn" "$expand" "$debug" "$c" "$boltzmann" "$expectimax" >"$output_file" &
+                            joblist+=($!) # バックグラウンドプロセスのPIDを記録
+                            wait_for_jobs # プロセス数を制限
+                            echo "Launched: "${executable}${tuple_value}" with tuple=$tuple_value, c=$c, boltzmann=$boltzmann, expectimax=$expectimax, depth=$depth, randomTurn=$random_turn, expand=$expand"
                         done
                     done
                 done

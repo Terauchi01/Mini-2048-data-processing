@@ -68,9 +68,11 @@ int main(int argc, char** argv) {
   bool Boltzmann = atoi(argv[9]);
   bool expectimax = atoi(argv[10]);
 
-  std::string baseDir = "../board_data/MCTS" + std::string(1, evfile[0]) +
-                        "/Boltzmann" + std::to_string(Boltzmann) +
-                        "_expectimax" + std::to_string(expectimax);
+  string baseDir = "../board_data/MCTS" + string(1, evfile[0]) + "/" +
+                   "randomTurn" + to_string(randomTurn) + "_expandcount" +
+                   to_string(expand_count) + "_c" + to_string(c) +
+                   "_Boltzmann" + to_string(Boltzmann) + "_expectimax" +
+                   to_string(expectimax);
 
   // ディレクトリ作成
   try {
