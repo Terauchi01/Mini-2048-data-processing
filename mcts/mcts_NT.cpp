@@ -68,11 +68,13 @@ int main(int argc, char** argv) {
   bool Boltzmann = atoi(argv[9]);
   bool expectimax = atoi(argv[10]);
 
-  string baseDir = "../board_data/MCTS" + string(1, evfile[0]) + "/" +
-                   "randomTurn" + to_string(randomTurn) + "_expandcount" +
-                   to_string(expand_count) + "_c" + to_string(c) +
-                   "_Boltzmann" + to_string(Boltzmann) + "_expectimax" +
-                   to_string(expectimax);
+  string baseDir =
+      "../board_data/MCTS" + std::string(1, evfile[0]) + "/" + "game_count" +
+      std::to_string(game_count) + "_evfile" + std::string(evfile) +
+      "_simulations" + std::to_string(simulations) + "_randomTurn" +
+      std::to_string(randomTurn) + "_expandcount" +
+      std::to_string(expand_count) + "_c" + std::to_string(c) + "_Boltzmann" +
+      std::to_string(Boltzmann) + "_expectimax" + std::to_string(expectimax);
 
   // ディレクトリ作成
   try {
