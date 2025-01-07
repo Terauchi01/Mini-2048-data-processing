@@ -402,9 +402,9 @@ class mcts_searcher_t {
     // 各子ノードの評価値を取得し、evals に格納
     for (edge_t *e : root->children) {
       double v = e->cnode->getQValue() + e->r;
-      if (e->tag >= 0 && e->tag < 4) {
-        evals[e->tag] = v;  // 子ノードの評価値を evals に格納
-      }
+      // if (e->tag >= 0 && e->tag < 4) {
+      evals[e->tag] = v;  // 子ノードの評価値を evals に格納
+      // }
       if (maxv < v) {
         maxv = v;
         move = e->tag;  // 最大評価値の手を更新
