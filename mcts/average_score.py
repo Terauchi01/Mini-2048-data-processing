@@ -33,7 +33,7 @@ def calculate_average_score(directory):
 
 # メイン処理
 def main():
-    default_base_directory = "board_data"  # デフォルトの基点ディレクトリ
+    default_base_directory = "../board_data"  # デフォルトの基点ディレクトリ
 
     if len(sys.argv) > 1:
         base_directory = os.path.join(
