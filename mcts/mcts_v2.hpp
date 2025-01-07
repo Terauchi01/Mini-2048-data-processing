@@ -5,8 +5,7 @@ using namespace std;
 #include "Game2048_3_3.h"
 // #define DEBUGOUT(x) {x}
 #define DEBUGOUT(x) \
-  {                 \
-  }
+  {}
 
 /**
  * 盤面のハッシュ関数を定義
@@ -167,7 +166,8 @@ class mcts_searcher_t {
       for (edge_t *e : node->children)
         vals.push_back(exp(e->cnode->getQValue() / t));
       DEBUGOUT(printf("do_state_select: Boltzmann vals = ");
-               for (double d : vals) { printf("%.3f ", d); } printf("\n"););
+               for (double d
+                    : vals) { printf("%.3f ", d); } printf("\n"););
       double sum_vals = reduce(vals.begin(), vals.end());
 
       double r = (double)rand() / RAND_MAX;
@@ -381,7 +381,7 @@ class mcts_searcher_t {
     afterstateNodeMap.clear();
   }
 
-  int search(const state_t &state) {
+  int search(const state_t &state, array<double, 5> &evals) {
     number_ev_calc = 0;
     node_t *root = find_or_create_node_state(state, stateNodeMap);
     expand_state(root);
@@ -398,13 +398,20 @@ class mcts_searcher_t {
 
     double maxv = -DBL_MAX;
     int move = -1;
+
+    // 各子ノードの評価値を取得し、evals に格納
     for (edge_t *e : root->children) {
       double v = e->cnode->getQValue() + e->r;
+      if (e->tag >= 0 && e->tag < 4) {
+        evals[e->tag] = v;  // 子ノードの評価値を evals に格納
+      }
       if (maxv < v) {
         maxv = v;
-        move = e->tag;
+        move = e->tag;  // 最大評価値の手を更新
       }
     }
-    return move;
+
+    evals[4] = maxv;  // 最後の要素に最大評価値を格納（オプション）
+    return move;  // 最適な手を返す
   }
 };

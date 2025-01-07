@@ -25,9 +25,9 @@ def calculate_average_score(directory):
 
                 if scores:
                     avg_score = sum(scores) / len(scores)
-                    results.append(f"{dir_name},{avg_score:.2f}")
+                    results.append((dir_name, avg_score))
                 else:
-                    results.append(f"{dir_name},No valid scores found")
+                    results.append((dir_name, None))
     return results
 
 
@@ -48,8 +48,22 @@ def main():
         sys.exit(1)
 
     results = calculate_average_score(base_directory)
-    for result in results:
-        print(result)
+
+    # スコアのある結果だけをフィルタリングしてソート
+    valid_results = [(name, score) for name, score in results if score is not None]
+    sorted_results = sorted(valid_results, key=lambda x: x[1], reverse=True)
+
+    # 上位10件を表示
+    print("\nTop 10 Directories by Average Score:")
+    for name, score in sorted_results[:10]:
+        print(f"{name}: {score:.2f}")
+
+    # スコアがないディレクトリを表示
+    no_score_results = [name for name, score in results if score is None]
+    if no_score_results:
+        print("\nDirectories with No Valid Scores:")
+        for name in no_score_results:
+            print(name)
 
 
 if __name__ == "__main__":

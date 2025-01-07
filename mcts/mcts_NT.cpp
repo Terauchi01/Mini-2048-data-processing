@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <list>
 #include <random>
@@ -112,8 +113,9 @@ int main(int argc, char** argv) {
 
     for (int turn = 1;; turn++) {
       state_t copy;
-      array<double, 5> evals = {-DBL_MAX, -DBL_MAX, -DBL_MAX, -DBL_MAX, 0.0};
-      int move = mcts_searcher.search(state);
+      array<double, 5> evals = {-10000000000.0, -10000000000.0, -10000000000.0,
+                                -10000000000.0, 0.0};
+      int move = mcts_searcher.search(state, evals);
 
       state_t nextstate;
       bool result = play(move, state, &nextstate);
@@ -186,7 +188,7 @@ int main(int argc, char** argv) {
       auto evalItr = eval_list.begin();
       advance(evalItr, distance(state_list.begin(), itr));
       for (int j = 0; j < 5; j++) {
-        evalFile << (*evalItr)[j] << (j == 4 ? "" : " ");
+        evalFile << std::fixed << (*evalItr)[j] << (j == 4 ? "" : " ");
       }
       evalFile << "\n";
     }
