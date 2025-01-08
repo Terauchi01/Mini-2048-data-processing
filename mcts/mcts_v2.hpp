@@ -388,7 +388,8 @@ class mcts_searcher_t {
 
     DEBUGOUT(printf("starting search for \n"););
     DEBUGOUT(state.print(););
-    for (int nsim = 0; number_ev_calc < simulations and nsim < 10000; nsim++) {
+    for (int nsim = 0; number_ev_calc < simulations and nsim < simulations;
+         nsim++) {
       DEBUGOUT(
           printf("simulation %d number_ev_calc %d\n", nsim, number_ev_calc););
       DEBUGOUT(print_tree(root, 0););

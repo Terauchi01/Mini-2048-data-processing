@@ -56,7 +56,7 @@ def main():
 
     # 上位10件を表示
     print("\nTop 10 Directories by Average Score:")
-    for name, avg, med in sorted_results[:10]:
+    for name, avg, med in sorted_results[:30]:
         print(f"{name}: Average={avg:.2f}, Median={med:.2f}")
 
     # スコアがないディレクトリを表示

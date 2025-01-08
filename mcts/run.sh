@@ -1,18 +1,18 @@
 #!/bin/bash
 
 # 最大同時実行プロセス数
-max_jobs=32
+max_jobs=16
 
 # プロセス管理用
 joblist=()
 
 # 固定設定
 seed=0
-game=1000
+game=100
 tuple=(4 6)
 simu=(3 50 400 3000 15000 55000)
 debug=0
-randamTrun=(1 2)
+randamTrun=(0 1 2)
 expand_count=(1 50)
 
 # 可変パラメータ
