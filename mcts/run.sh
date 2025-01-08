@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 最大同時実行プロセス数
-max_jobs=16
+max_jobs=32
 
 # プロセス管理用
 joblist=()

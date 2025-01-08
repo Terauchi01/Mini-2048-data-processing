@@ -9,6 +9,7 @@
 #include "play_table.h"
 namespace fs = std::filesystem;
 using namespace std;
+
 int progress_calculation(int board[9]) {
   int sum = 0;
   for (int i = 0; i < 9; i++) {
@@ -18,29 +19,49 @@ int progress_calculation(int board[9]) {
   }
   return sum / 2;
 }
+
 int main(int argc, char** argv) {
-  if (argc < 1 + 1) {
-    fprintf(stderr, "Usage: playgreedy <load-player-name>\n");
+  if (argc < 2) {
+    fprintf(stderr, "Usage: playgreedy <path_to_directory>\n");
     exit(1);
   }
-  string dname = argv[1];
-  string eval_player = "PP";
-  double average = 0;
-  readDB2();
-  string s = "../board_data/" + dname + "/state.txt";
-  fs::create_directory("../board_data");
-  string dir = "../board_data/" + eval_player + "/";
-  fs::create_directory(dir);
 
-  read_state_one_game(s);
-  string file = "eval-state-" + dname + ".txt";
-  string fullPath = dir + file;
-  const char* filename = fullPath.c_str();
+  // ../board_data/argv[1] に変換
+  std::string input_dir = (fs::path("../board_data") / argv[1]).string();
+
+  // state.txt のパスを決定
+  string state_file = fs::path(input_dir) / "state.txt";
+
+  // ファイルが存在しない場合のエラーハンドリング
+  if (!fs::exists(state_file)) {
+    cerr << "Error: " << state_file << " does not exist." << endl;
+    return 1;
+  }
+
+  string eval_player = "PP";
+  readDB2();
+
+  // 出力ディレクトリを作成
+  string output_dir = "../board_data/" + eval_player + "/";
+  fs::create_directory(output_dir);
+
+  // 出力ファイルのパス
+  string output_file = output_dir + "eval-state-" +
+                       fs::path(input_dir).filename().string() + ".txt";
+
+  // 入力データの読み込み
+  read_state_one_game(state_file);
+
+  // 出力ファイルを開く
+  const char* filename = output_file.c_str();
   FILE* fp = fopen(filename, "w+");
+  if (!fp) {
+    cerr << "Error: Could not open " << filename << " for writing." << endl;
+    return 1;
+  }
+
   int i = 0;
-  vector<vector<double>> eval_list;
   for (array<int, 9>& arr : boards) {
-    vector<double> evals(4, -10000);
     if (arr[0] == -1) {
       fprintf(fp, "%s\n", gameovers[i].c_str());
       i++;
@@ -61,7 +82,10 @@ int main(int argc, char** argv) {
       }
     }
   }
+
   fclose(fp);
+
+  cout << "Evaluation complete. Results saved to " << output_file << endl;
 
   return 0;
 }
