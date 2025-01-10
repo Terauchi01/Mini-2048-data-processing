@@ -68,16 +68,20 @@ def get_config():
 
 
 def get_files():
+    is_include_PP = args.graph == "surv"
     data = [
         PlayerData(d)
         for d in board_data_dirs
         if re.search(intersection_match, str(d))
         and not re.search(exclude_match, str(d))
+        and (is_include_PP or not re.search("PP", str(d)))
     ]
+    state_files = [d.state_file for d in data]
+    if is_include_PP:
+        return [], [], [], state_files
     pp_eval_files = [d.pp_eval_state for d in data]
     pp_eval_after_files = [d.pp_eval_after_state for d in data]
     pr_eval_files = [d.eval_file for d in data]
-    state_files = [d.state_file for d in data]
     return pp_eval_files, pp_eval_after_files, pr_eval_files, state_files
 
 
@@ -101,7 +105,7 @@ file_group = arg_parser.add_mutually_exclusive_group()
 file_group.add_argument(
     "--exclude",
     nargs="+",
-    default=["PP"],
+    default=[],
     help="除外するディレクトリ名を指定する。",
 )
 file_group.add_argument(
