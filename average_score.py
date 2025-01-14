@@ -3,7 +3,6 @@ import re
 import sys
 import statistics
 
-
 # 指定したディレクトリの平均スコアと中央値を計算
 def calculate_scores(directory):
     results = []
@@ -31,12 +30,11 @@ def calculate_scores(directory):
                     results.append((dir_name, None, None))
     return results
 
-
 # メイン処理
 def main():
-    default_base_directory = "../board_data/"  # デフォルトの基点ディレクトリ
+    default_base_directory = "board_data/"  # デフォルトの基点ディレクトリ
 
-    # 引数でサブディレクトリを指定
+    # 引数でサブディレクトリと表示件数を指定
     if len(sys.argv) > 1:
         base_directory = os.path.join(default_base_directory, sys.argv[1])
     else:
@@ -47,6 +45,16 @@ def main():
         print(f"Error: Directory '{base_directory}' does not exist.")
         sys.exit(1)
 
+    # 表示件数を指定 (デフォルトは10件)
+    if len(sys.argv) > 2:
+        try:
+            display_count = int(sys.argv[2])
+        except ValueError:
+            print("Error: Display count must be an integer.")
+            sys.exit(1)
+    else:
+        display_count = 10
+
     # スコア計算
     results = calculate_scores(base_directory)
 
@@ -54,9 +62,13 @@ def main():
     valid_results = [(name, avg, med) for name, avg, med in results if avg is not None]
     sorted_results = sorted(valid_results, key=lambda x: x[1], reverse=True)
 
-    # 上位10件を表示
-    print("\nTop 10 Directories by Average Score:")
-    for name, avg, med in sorted_results[:30]:
+    # 表示件数を調整
+    if display_count == -1:
+        display_count = len(sorted_results)
+
+    # 上位件数を表示
+    print("\nTop Directories by Average Score:")
+    for name, avg, med in sorted_results[:display_count]:
         print(f"{name}: Average={avg:.2f}, Median={med:.2f}")
 
     # スコアがないディレクトリを表示
@@ -65,7 +77,6 @@ def main():
         print("\nDirectories with No Valid Scores:")
         for name in no_score_results:
             print(name)
-
 
 if __name__ == "__main__":
     main()
