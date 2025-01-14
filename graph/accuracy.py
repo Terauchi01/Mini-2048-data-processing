@@ -24,6 +24,7 @@ def plot_accuracy(
     player_eval_files: list[Path],
     output: Path,
     config: dict = {},
+    is_show: bool = True,
 ):
     """
     最善手率をプロットする。
@@ -34,9 +35,9 @@ def plot_accuracy(
         pp_eval_and_hand_progress = get_eval_and_hand_progress(perfect_eval_file)
         pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
 
-        assert (
-            len(pp_eval_and_hand_progress) == len(pr_eval_and_hand_progress)
-        ), f"データ数が異なります。{len(pp_eval_and_hand_progress)=}, {len(pr_eval_and_hand_progress)=}"
+        assert len(pp_eval_and_hand_progress) == len(pr_eval_and_hand_progress), (
+            f"データ数が異なります。{len(pp_eval_and_hand_progress)=}, {len(pr_eval_and_hand_progress)=}"
+        )
 
         acc_dict = defaultdict(list)
 
@@ -55,12 +56,17 @@ def plot_accuracy(
             label=config.get("labels", {}).get(
                 player_eval_file.parent.name, player_eval_file.parent.name
             ),
+            color=config.get("colors", {}).get(
+                player_eval_file.parent.name,
+                None,
+            ),
         )
     plt.xlabel("progress")
     plt.ylabel("accuracy")
     plt.legend()
     plt.savefig(output)
-    plt.show()
+    if is_show:
+        plt.show()
 
 
 if __name__ == "__main__":

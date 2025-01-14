@@ -62,11 +62,11 @@ def get_config():
             if d.name not in config["labels"]:
                 config["labels"][d.name] = d.name
             if d.name not in config["colors"]:
-                config["colors"][d.name] = ""
+                config["colors"][d.name] = None
     else:
         config = {
             "labels": {d.name: d.name for d in board_data_dirs},
-            "colors": {d.name: "" for d in board_data_dirs},
+            "colors": {d.name: None for d in board_data_dirs},
         }
 
     write_config(config_path, config)
@@ -105,7 +105,7 @@ arg_parser.add_argument(
     "--output",
     "-o",
     type=str,
-    help="出力するファイルを指定する。",
+    help="出力先を指定する。",
 )
 file_group = arg_parser.add_mutually_exclusive_group()
 file_group.add_argument(
@@ -124,6 +124,11 @@ arg_parser.add_argument(
     "--config",
     type=str,
     help="設定ファイルのパスを指定する。現在は未使用。",
+)
+arg_parser.add_argument(
+    "--is-show",
+    action="store_true",
+    help="グラフ作成完了時に表示する。",
 )
 arg_parser.add_argument(
     "--version",
@@ -153,6 +158,7 @@ if args.graph == "acc":
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
         config=config,
+        is_show=args.is_show,
     )
 elif args.graph == "err-rel":
     output_name = args.output if args.output else "error_rel.pdf"
@@ -162,6 +168,7 @@ elif args.graph == "err-rel":
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
         config=config,
+        is_show=args.is_show,
     )
 elif args.graph == "err-abs":
     output_name = args.output if args.output else "error_abs.pdf"
@@ -171,6 +178,7 @@ elif args.graph == "err-abs":
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
         config=config,
+        is_show=args.is_show,
     )
 elif args.graph == "surv":
     output_name = args.output if args.output else "survival.pdf"
@@ -179,6 +187,7 @@ elif args.graph == "surv":
         state_files=state_files,
         output=output_dir / output_name,
         config=config,
+        is_show=args.is_show,
     )
 elif args.graph == "scatter":
     output_name = args.output if args.output else "scatter.pdf"
@@ -188,4 +197,7 @@ elif args.graph == "scatter":
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
         config=config,
+        is_show=args.is_show,
     )
+rel_path = (output_dir / output_name).relative_to(BASE_DIR.parent)
+print(f"{rel_path}を作成しました。")

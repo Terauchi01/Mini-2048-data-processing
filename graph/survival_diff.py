@@ -12,23 +12,40 @@ def plot_survival_rate(
     is_show: bool = True,
 ):
     """
-    生存率をプロットする。
+    パーフェクトプレイヤとの生存率の差をプロットする。
     """
+
+    pp_state_file = Path("board_data/PP/state.txt")
+    text = pp_state_file.read_text()
+    progress_text = re.findall(r"progress: (\d+)", text)
+    progresses = [int(progress) for progress in progress_text]
+
+    droped_counter = Counter(progresses)
+    max_value = len(progresses)
+    pp_survival_rate = []
+
+    for i in range(max(progresses) + 10):
+        max_value -= droped_counter[i]
+        pp_survival_rate.append(max_value / len(progresses))
+    # 上でパーフェクトプレイヤの生存率を計算したので、差を計算する
+
     for state_file in state_files:
+        if state_file == pp_state_file:
+            continue
         text = state_file.read_text()
         progress_text = re.findall(r"progress: (\d+)", text)
         progresses = [int(progress) for progress in progress_text]
 
         droped_counter = Counter(progresses)
         max_value = len(progresses)
-        survival_rate = []
+        diff_survival_rate = []
 
         for i in range(max(progresses) + 10):
             max_value -= droped_counter[i]
-            survival_rate.append(max_value / len(progresses))
+            diff_survival_rate.append(max_value / len(progresses) - pp_survival_rate[i])
 
         plt.plot(
-            survival_rate,
+            diff_survival_rate,
             label=config.get("labels", {}).get(
                 state_file.parent.name, state_file.parent.name
             ),
