@@ -8,7 +8,7 @@ from . import accuracy, error_abs, error_rel, scatter, survival
 BASE_DIR = Path(__file__).resolve().parent
 board_dir = BASE_DIR.parent / "board_data"
 board_data_dirs = [d for d in board_dir.iterdir() if d.is_dir()]
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 
 def read_config(path: Path) -> dict:
@@ -61,8 +61,14 @@ def get_config():
         for d in board_data_dirs:
             if d.name not in config["labels"]:
                 config["labels"][d.name] = d.name
+            if d.name not in config["colors"]:
+                config["colors"][d.name] = ""
     else:
-        config = {"labels": {d.name: d.name for d in board_data_dirs}}
+        config = {
+            "labels": {d.name: d.name for d in board_data_dirs},
+            "colors": {d.name: "" for d in board_data_dirs},
+        }
+
     write_config(config_path, config)
     return config
 
@@ -136,6 +142,7 @@ output_dir = BASE_DIR.parent / "output"
 output_dir.mkdir(exist_ok=True)
 
 config_path = BASE_DIR / "config.json"
+config = get_config()
 pp_eval_files, pp_eval_after_files, pr_eval_files, state_files = get_files()
 
 if args.graph == "acc":
@@ -145,6 +152,7 @@ if args.graph == "acc":
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
+        config=config,
     )
 elif args.graph == "err-rel":
     output_name = args.output if args.output else "error_rel.pdf"
@@ -153,6 +161,7 @@ elif args.graph == "err-rel":
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
+        config=config,
     )
 elif args.graph == "err-abs":
     output_name = args.output if args.output else "error_abs.pdf"
@@ -161,6 +170,7 @@ elif args.graph == "err-abs":
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
+        config=config,
     )
 elif args.graph == "surv":
     output_name = args.output if args.output else "survival.pdf"
@@ -168,6 +178,7 @@ elif args.graph == "surv":
     survival.plot_survival_rate(
         state_files=state_files,
         output=output_dir / output_name,
+        config=config,
     )
 elif args.graph == "scatter":
     output_name = args.output if args.output else "scatter.pdf"
@@ -176,4 +187,5 @@ elif args.graph == "scatter":
         perfect_eval_files=pp_eval_after_files,
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
+        config=config,
     )

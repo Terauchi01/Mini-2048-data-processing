@@ -33,6 +33,6 @@ perfect_player はメモリ不足が懸念されるので、サーバで動か�
 
 - [x] 他の player の state を Perfect Player に食わせて、eval を出力するコードを記述する。(PP/eval*state*[player].txt)
 - [x] 他の player の afterstate を Perfect Player に食わせて、eval を出力するコードを記述する。 (PP/eval*saftertate*[player].txt)
-- [ ] PPのsurvを出そうとすると面倒
-- [ ] surv diffを出せるようにしたい
+- [x] PP の surv を出そうとすると面倒
+- [ ] surv diff を出せるようにしたい
 - [ ] ディレクトリの中のデータを参照したいけど要検討
