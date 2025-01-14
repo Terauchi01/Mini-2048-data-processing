@@ -3,7 +3,7 @@ import json
 import re
 from pathlib import Path
 
-from . import accuracy, error_abs, error_rel, scatter, survival
+from . import accuracy, error_abs, error_rel, histgram, scatter, survival, survival_diff
 
 BASE_DIR = Path(__file__).resolve().parent
 board_dir = BASE_DIR.parent / "board_data"
@@ -98,7 +98,7 @@ arg_parser = argparse.ArgumentParser(
 )
 arg_parser.add_argument(
     "graph",
-    choices=["acc", "err-rel", "err-abs", "surv", "scatter"],
+    choices=["acc", "err-rel", "err-abs", "surv", "surv-diff", "scatter", "histgram"],
     help="実行するグラフを指定する。",
 )
 arg_parser.add_argument(
@@ -184,6 +184,24 @@ elif args.graph == "surv":
     output_name = args.output if args.output else "survival.pdf"
 
     survival.plot_survival_rate(
+        state_files=state_files,
+        output=output_dir / output_name,
+        config=config,
+        is_show=args.is_show,
+    )
+elif args.graph == "surv-diff":
+    output_name = args.output if args.output else "survival-diff.pdf"
+
+    survival_diff.plot_survival_diff_rate(
+        state_files=state_files,
+        output=output_dir / output_name,
+        config=config,
+        is_show=args.is_show,
+    )
+elif args.graph == "histgram":
+    output_name = args.output if args.output else "histgram.pdf"
+
+    histgram.plot_histgram(
         state_files=state_files,
         output=output_dir / output_name,
         config=config,

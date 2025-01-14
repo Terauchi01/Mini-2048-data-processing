@@ -48,8 +48,10 @@ def plot_survival_rate(
 if __name__ == "__main__":
     plot_survival_rate(
         state_files=[
+            Path("board_data/PP/state.txt"),
             Path("board_data/CNN_DEEP/state.txt"),
-            # Path("NN-DEEP/state.txt"),
+            Path("board_data/CNN_DEEP_restart/state.txt"),
             # Path("NT4/state.txt"),
         ],
+        output=Path("./output/survival.pdf"),
     )
