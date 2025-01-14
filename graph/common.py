@@ -30,7 +30,7 @@ def get_eval_and_hand_progress(eval_file: Path):
     eval_and_hand_progress = [
         EvalAndHandProgress(
             evals=list(map(float, line.split()[:4])),
-            prg=int(line.split()[4]),  # progress
+            prg=int(float(line.split()[4])),  # progress を double(float)で受け取ってから int に変換
         )
         for line in eval_lines
     ]
