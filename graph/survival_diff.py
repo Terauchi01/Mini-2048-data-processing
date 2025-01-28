@@ -55,9 +55,10 @@ def plot_survival_diff_rate(
                 state_file.parent.name,
                 None,
             ),
+            linestyle=config.get("linestyles", {}).get(state_file.parent.name, "solid"),
         )
     plt.xlabel("progress")
-    plt.ylabel("survival rate")
+    plt.ylabel("difference in survival rate for PP")
     plt.legend()
     plt.savefig(output)
     if is_show:

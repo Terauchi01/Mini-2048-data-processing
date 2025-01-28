@@ -36,6 +36,7 @@ def plot_survival_rate(
                 state_file.parent.name,
                 None,
             ),
+            linestyle=config.get("linestyles", {}).get(state_file.parent.name, "solid"),
         )
     plt.xlabel("progress")
     plt.ylabel("survival rate")

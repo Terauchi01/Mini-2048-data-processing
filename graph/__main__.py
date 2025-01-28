@@ -57,16 +57,19 @@ class PlayerData:
 def get_config():
     if config_path.exists():
         config = read_config(config_path)
-        # config["labels"]に存在しないディレクトリがあれば追加
+        # config["labels"], config["colors"], config["linestyles"] に存在しないディレクトリがあれば追加
         for d in board_data_dirs:
             if d.name not in config["labels"]:
                 config["labels"][d.name] = d.name
             if d.name not in config["colors"]:
                 config["colors"][d.name] = None
+            if d.name not in config["linestyles"]:
+                config["linestyles"][d.name] = None
     else:
         config = {
             "labels": {d.name: d.name for d in board_data_dirs},
             "colors": {d.name: None for d in board_data_dirs},
+            "linestyles": {d.name: None for d in board_data_dirs},
         }
 
     write_config(config_path, config)
