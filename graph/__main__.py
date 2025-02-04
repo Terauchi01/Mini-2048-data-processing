@@ -79,7 +79,7 @@ def get_config():
 
 
 def get_files():
-    is_include_PP = args.graph == "surv"
+    is_include_PP = args.graph in ("surv", "surv-diff", "histgram")
     data = [
         PlayerData(d)
         for d in board_data_dirs

@@ -15,7 +15,7 @@ def plot_histgram(
     """
     得点分布をプロットする。
     """
-    for i, state_file in enumerate(state_files):
+    for state_file in state_files:
         text = state_file.read_text()
         score_txt = re.findall(r"score: (\d+)", text)
         scores = [int(score) for score in score_txt]
@@ -23,7 +23,7 @@ def plot_histgram(
         plt.hist(scores, bins=BINS)
         plt.xlabel("score")
         plt.ylabel("frequency")
-        plt.savefig(output.with_stem(f"{output.stem}-{i}"))
+        plt.savefig(output.with_stem(f"{output.stem}-{state_file.parent.name}"))
         if is_show:
             plt.show()
         plt.close()
