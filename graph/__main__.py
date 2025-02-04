@@ -3,6 +3,8 @@ import json
 import re
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+
 from . import accuracy, error_abs, error_rel, histgram, scatter, survival, survival_diff
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -156,7 +158,7 @@ pp_eval_files, pp_eval_after_files, pr_eval_files, state_files = get_files()
 if args.graph == "acc":
     output_name = args.output if args.output else "accuracy.pdf"
 
-    accuracy.plot_accuracy(
+    result = accuracy.plot_accuracy(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
@@ -166,7 +168,7 @@ if args.graph == "acc":
 elif args.graph == "err-rel":
     output_name = args.output if args.output else "error_rel.pdf"
 
-    error_rel.plot_rel_error(
+    result = error_rel.plot_rel_error(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
@@ -176,7 +178,7 @@ elif args.graph == "err-rel":
 elif args.graph == "err-abs":
     output_name = args.output if args.output else "error_abs.pdf"
 
-    error_abs.plot_abs_error(
+    result = error_abs.plot_abs_error(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
@@ -186,7 +188,7 @@ elif args.graph == "err-abs":
 elif args.graph == "surv":
     output_name = args.output if args.output else "survival.pdf"
 
-    survival.plot_survival_rate(
+    result = survival.plot_survival_rate(
         state_files=state_files,
         output=output_dir / output_name,
         config=config,
@@ -195,7 +197,7 @@ elif args.graph == "surv":
 elif args.graph == "surv-diff":
     output_name = args.output if args.output else "survival-diff.pdf"
 
-    survival_diff.plot_survival_diff_rate(
+    result = survival_diff.plot_survival_diff_rate(
         state_files=state_files,
         output=output_dir / output_name,
         config=config,
@@ -204,7 +206,7 @@ elif args.graph == "surv-diff":
 elif args.graph == "histgram":
     output_name = args.output if args.output else "histgram.pdf"
 
-    histgram.plot_histgram(
+    result = histgram.plot_histgram(
         state_files=state_files,
         output=output_dir / output_name,
         config=config,
@@ -213,12 +215,33 @@ elif args.graph == "histgram":
 elif args.graph == "scatter":
     output_name = args.output if args.output else "scatter.pdf"
 
-    scatter.plot_scatter(
+    result = scatter.plot_scatter(
         perfect_eval_files=pp_eval_after_files,
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
         config=config,
         is_show=args.is_show,
     )
+
+if result:
+    for k, v in result.data.items():
+        plt.plot(
+            v.x,
+            v.y,
+            label=config.get("labels", {}).get(k, k),
+            color=config.get("colors", {}).get(
+                k,
+                None,
+            ),
+            linestyle=config.get("linestyles", {}).get(k, "solid"),
+        )
+    plt.xlabel(result.x_label)
+    plt.ylabel(result.y_label)
+    plt.legend()
+    plt.savefig(
+        output_dir / output_name,
+    )
+    if args.is_show:
+        plt.show()
 rel_path = (output_dir / output_name).relative_to(BASE_DIR.parent)
 print(f"{rel_path}を作成しました。")

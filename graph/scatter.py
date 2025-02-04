@@ -29,9 +29,9 @@ def plot_scatter(
         pp_evals = get_evals(perfect_eval_file)
         pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
 
-        assert len(pp_evals) == len(
-            pr_eval_and_hand_progress
-        ), f"データ数が異なります。{len(pp_evals)=}, {len(pr_eval_and_hand_progress)=}"
+        assert len(pp_evals) == len(pr_eval_and_hand_progress), (
+            f"データ数が異なります。{len(pp_evals)=}, {len(pr_eval_and_hand_progress)=}"
+        )
 
         scatter_data = [
             (ev, pr_eval.evals[pr_eval.idx[0]])

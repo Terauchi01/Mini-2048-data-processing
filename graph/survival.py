@@ -2,7 +2,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+from .common import GraphData, PlotData
 
 
 def plot_survival_rate(
@@ -10,10 +10,15 @@ def plot_survival_rate(
     output: Path,
     config: dict = {},
     is_show: bool = True,
-):
+) -> PlotData:
     """
     生存率をプロットする。
     """
+    result = PlotData(
+        x_label="progress",
+        y_label="survival rate",
+        data={state_file.parent.name: None for state_file in state_files},
+    )
     for state_file in state_files:
         text = state_file.read_text()
         progress_text = re.findall(r"progress: (\d+)", text)
@@ -27,23 +32,28 @@ def plot_survival_rate(
             max_value -= droped_counter[i]
             survival_rate.append(max_value / len(progresses))
 
-        plt.plot(
-            survival_rate,
-            label=config.get("labels", {}).get(
-                state_file.parent.name, state_file.parent.name
-            ),
-            color=config.get("colors", {}).get(
-                state_file.parent.name,
-                None,
-            ),
-            linestyle=config.get("linestyles", {}).get(state_file.parent.name, "solid"),
+        result.data[state_file.parent.name] = GraphData(
+            x=list(range(len(survival_rate))),
+            y=survival_rate,
         )
-    plt.xlabel("progress")
-    plt.ylabel("survival rate")
-    plt.legend()
-    plt.savefig(output)
-    if is_show:
-        plt.show()
+    return result
+    #     plt.plot(
+    #         survival_rate,
+    #         label=config.get("labels", {}).get(
+    #             state_file.parent.name, state_file.parent.name
+    #         ),
+    #         color=config.get("colors", {}).get(
+    #             state_file.parent.name,
+    #             None,
+    #         ),
+    #         linestyle=config.get("linestyles", {}).get(state_file.parent.name, "solid"),
+    #     )
+    # plt.xlabel("progress")
+    # plt.ylabel("survival rate")
+    # plt.legend()
+    # plt.savefig(output)
+    # if is_show:
+    #     plt.show()
 
 
 if __name__ == "__main__":

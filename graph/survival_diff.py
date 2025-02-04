@@ -2,7 +2,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+from .common import GraphData, PlotData
 
 
 def plot_survival_diff_rate(
@@ -23,6 +23,12 @@ def plot_survival_diff_rate(
     droped_counter = Counter(progresses)
     max_value = len(progresses)
     pp_survival_rate = []
+
+    result = PlotData(
+        x_label="progress",
+        y_label="difference in survival rate for PP",
+        data={state_file.parent.name: None for state_file in state_files},
+    )
 
     for i in range(max(progresses) + 10):
         max_value -= droped_counter[i]
@@ -46,23 +52,28 @@ def plot_survival_diff_rate(
                 abs(max_value / len(progresses) - pp_survival_rate[i])
             )
 
-        plt.plot(
-            diff_survival_rate,
-            label=config.get("labels", {}).get(
-                state_file.parent.name, state_file.parent.name
-            ),
-            color=config.get("colors", {}).get(
-                state_file.parent.name,
-                None,
-            ),
-            linestyle=config.get("linestyles", {}).get(state_file.parent.name, "solid"),
+        result.data[state_file.parent.name] = GraphData(
+            x=list(range(len(diff_survival_rate))),
+            y=diff_survival_rate,
         )
-    plt.xlabel("progress")
-    plt.ylabel("difference in survival rate for PP")
-    plt.legend()
-    plt.savefig(output)
-    if is_show:
-        plt.show()
+    return result
+    #     plt.plot(
+    #         diff_survival_rate,
+    #         label=config.get("labels", {}).get(
+    #             state_file.parent.name, state_file.parent.name
+    #         ),
+    #         color=config.get("colors", {}).get(
+    #             state_file.parent.name,
+    #             None,
+    #         ),
+    #         linestyle=config.get("linestyles", {}).get(state_file.parent.name, "solid"),
+    #     )
+    # plt.xlabel("progress")
+    # plt.ylabel("difference in survival rate for PP")
+    # plt.legend()
+    # plt.savefig(output)
+    # if is_show:
+    #     plt.show()
 
 
 if __name__ == "__main__":
