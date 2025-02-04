@@ -6,12 +6,9 @@ import numpy as np
 from .common import GraphData, PlotData, get_eval_and_hand_progress, moving_average
 
 
-def plot_rel_error(
+def calc_rel_error_data(
     perfect_eval_files: list[Path],
     player_eval_files: list[Path],
-    output: Path,
-    config: dict = {},
-    is_show: bool = True,
 ) -> PlotData:
     """
     相対誤差をプロットする。
@@ -55,30 +52,10 @@ def plot_rel_error(
             y=moving_average(list(rel_err.values()), 5).tolist(),
         )
     return result
-    #     plt.plot(
-    #         moving_average(list(rel_err.keys()), 5).tolist(),
-    #         moving_average(list(rel_err.values()), 5).tolist(),
-    #         label=config.get("labels", {}).get(
-    #             player_eval_file.parent.name, player_eval_file.parent.name
-    #         ),
-    #         color=config.get("colors", {}).get(
-    #             player_eval_file.parent.name,
-    #             None,
-    #         ),
-    #         linestyle=config.get("linestyles", {}).get(
-    #             player_eval_file.parent.name, "solid"
-    #         ),
-    #     )
-    # plt.xlabel("progress")
-    # plt.ylabel("rel error")
-    # plt.legend()
-    # plt.savefig(output)
-    # if is_show:
-    #     plt.show()
 
 
 if __name__ == "__main__":
-    plot_rel_error(
+    calc_rel_error_data(
         perfect_eval_files=[
             Path("board_data/PP/eval-state-CNN_DEEP.txt"),
         ],

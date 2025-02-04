@@ -5,11 +5,8 @@ from pathlib import Path
 from .common import GraphData, PlotData
 
 
-def plot_survival_diff_rate(
+def calc_survival_diff_rate_data(
     state_files: list[Path],
-    output: Path,
-    config: dict = {},
-    is_show: bool = True,
 ):
     """
     パーフェクトプレイヤとの生存率の差をプロットする。
@@ -57,27 +54,10 @@ def plot_survival_diff_rate(
             y=diff_survival_rate,
         )
     return result
-    #     plt.plot(
-    #         diff_survival_rate,
-    #         label=config.get("labels", {}).get(
-    #             state_file.parent.name, state_file.parent.name
-    #         ),
-    #         color=config.get("colors", {}).get(
-    #             state_file.parent.name,
-    #             None,
-    #         ),
-    #         linestyle=config.get("linestyles", {}).get(state_file.parent.name, "solid"),
-    #     )
-    # plt.xlabel("progress")
-    # plt.ylabel("difference in survival rate for PP")
-    # plt.legend()
-    # plt.savefig(output)
-    # if is_show:
-    #     plt.show()
 
 
 if __name__ == "__main__":
-    plot_survival_diff_rate(
+    calc_survival_diff_rate_data(
         state_files=[
             Path("board_data/CNN_DEEP/state.txt"),
             Path("board_data/CNN_DEEP_restart/state.txt"),

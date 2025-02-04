@@ -18,6 +18,7 @@ def plot_scatter(
     perfect_eval_files: list[Path],
     player_eval_files: list[Path],
     output: Path,
+    is_show: bool = True,
     config: dict = {},
 ):
     """
@@ -60,7 +61,10 @@ def plot_scatter(
             )
         )
         plt.savefig(output.with_stem(f"{output.stem}_{i}"))
-        plt.show()
+        if is_show:
+            plt.show()
+        plt.close()
+    return None
 
 
 if __name__ == "__main__":

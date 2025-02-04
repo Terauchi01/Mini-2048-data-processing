@@ -5,11 +5,8 @@ from pathlib import Path
 from .common import GraphData, PlotData
 
 
-def plot_survival_rate(
+def calc_survival_rate_data(
     state_files: list[Path],
-    output: Path,
-    config: dict = {},
-    is_show: bool = True,
 ) -> PlotData:
     """
     生存率をプロットする。
@@ -37,27 +34,10 @@ def plot_survival_rate(
             y=survival_rate,
         )
     return result
-    #     plt.plot(
-    #         survival_rate,
-    #         label=config.get("labels", {}).get(
-    #             state_file.parent.name, state_file.parent.name
-    #         ),
-    #         color=config.get("colors", {}).get(
-    #             state_file.parent.name,
-    #             None,
-    #         ),
-    #         linestyle=config.get("linestyles", {}).get(state_file.parent.name, "solid"),
-    #     )
-    # plt.xlabel("progress")
-    # plt.ylabel("survival rate")
-    # plt.legend()
-    # plt.savefig(output)
-    # if is_show:
-    #     plt.show()
 
 
 if __name__ == "__main__":
-    plot_survival_rate(
+    calc_survival_rate_data(
         state_files=[
             Path("board_data/PP/state.txt"),
             Path("board_data/CNN_DEEP/state.txt"),

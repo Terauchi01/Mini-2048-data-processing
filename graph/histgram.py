@@ -27,6 +27,7 @@ def plot_histgram(
         if is_show:
             plt.show()
         plt.close()
+    return None
 
 
 if __name__ == "__main__":

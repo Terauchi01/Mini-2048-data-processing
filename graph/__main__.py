@@ -158,50 +158,35 @@ pp_eval_files, pp_eval_after_files, pr_eval_files, state_files = get_files()
 if args.graph == "acc":
     output_name = args.output if args.output else "accuracy.pdf"
 
-    result = accuracy.plot_accuracy(
+    result = accuracy.calc_accuracy_data(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
-        output=output_dir / output_name,
-        config=config,
-        is_show=args.is_show,
     )
 elif args.graph == "err-rel":
     output_name = args.output if args.output else "error_rel.pdf"
 
-    result = error_rel.plot_rel_error(
+    result = error_rel.calc_rel_error_data(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
-        output=output_dir / output_name,
-        config=config,
-        is_show=args.is_show,
     )
 elif args.graph == "err-abs":
     output_name = args.output if args.output else "error_abs.pdf"
 
-    result = error_abs.plot_abs_error(
+    result = error_abs.calc_abs_error_data(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
-        output=output_dir / output_name,
-        config=config,
-        is_show=args.is_show,
     )
 elif args.graph == "surv":
     output_name = args.output if args.output else "survival.pdf"
 
-    result = survival.plot_survival_rate(
+    result = survival.calc_survival_rate_data(
         state_files=state_files,
-        output=output_dir / output_name,
-        config=config,
-        is_show=args.is_show,
     )
 elif args.graph == "surv-diff":
     output_name = args.output if args.output else "survival-diff.pdf"
 
-    result = survival_diff.plot_survival_diff_rate(
+    result = survival_diff.calc_survival_diff_rate_data(
         state_files=state_files,
-        output=output_dir / output_name,
-        config=config,
-        is_show=args.is_show,
     )
 elif args.graph == "histgram":
     output_name = args.output if args.output else "histgram.pdf"

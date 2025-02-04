@@ -24,12 +24,9 @@ def calc_accuracy(
     return count / len(pr_ehp.idx)
 
 
-def plot_accuracy(
+def calc_accuracy_data(
     perfect_eval_files: list[Path],
     player_eval_files: list[Path],
-    output: Path,
-    config: dict = {},
-    is_show: bool = True,
 ) -> PlotData:
     """
     最善手率をプロットする。
@@ -67,30 +64,10 @@ def plot_accuracy(
             y=moving_average(list(acc.values()), 10).tolist(),
         )
     return result
-    #     plt.plot(
-    #         moving_average(list(acc.keys()), 10).tolist(),
-    #         moving_average(list(acc.values()), 10).tolist(),
-    #         label=config.get("labels", {}).get(
-    #             player_eval_file.parent.name, player_eval_file.parent.name
-    #         ),
-    #         color=config.get("colors", {}).get(
-    #             player_eval_file.parent.name,
-    #             None,
-    #         ),
-    #         linestyle=config.get("linestyles", {}).get(
-    #             player_eval_file.parent.name, "solid"
-    #         ),
-    #     )
-    # plt.xlabel("progress")
-    # plt.ylabel("accuracy")
-    # plt.legend()
-    # plt.savefig(output)
-    # if is_show:
-    #     plt.show()
 
 
 if __name__ == "__main__":
-    plot_accuracy(
+    calc_accuracy_data(
         perfect_eval_files=[
             Path("board_data/PP/eval-state-CNN_DEEP.txt"),
         ],
