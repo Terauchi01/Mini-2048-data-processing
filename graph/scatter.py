@@ -56,10 +56,9 @@ def plot_scatter(
         )
         plt.xlabel("perfect")
         plt.ylabel(
-            config.get("labels", {}).get(
-                player_eval_file.parent.name, player_eval_file.parent.name
-            )
+            config.get(player_eval_file.parent.name, {}).get("label", player_eval_file.parent.name)
         )
+        plt.tight_layout()
         plt.savefig(output.with_stem(f"{output.stem}_{i}"))
         if is_show:
             plt.show()

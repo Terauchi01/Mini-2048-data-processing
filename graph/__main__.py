@@ -10,7 +10,7 @@ from . import accuracy, error_abs, error_rel, histgram, scatter, survival, survi
 BASE_DIR = Path(__file__).resolve().parent
 board_dir = BASE_DIR.parent / "board_data"
 board_data_dirs = [d for d in board_dir.iterdir() if d.is_dir()]
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 
 def read_config(path: Path) -> dict:
@@ -55,23 +55,45 @@ class PlayerData:
             raise FileNotFoundError(f"{pp}が存在しません。")
         return pp
 
+def convert_version(config):
+    backup = config_path.with_stem(f"{config_path.stem}-v1_1")
+    write_config(backup, config)
+    print(f"バックアップを{backup}に保存しました。")
+    for d in board_data_dirs:
+        old_label = config.get("labels", {}).get(d.name, d.name)
+        old_color = config.get("colors", {}).get(d.name, None)
+        old_linestyle = config.get("linestyles", {}).get(d.name, "solid")
+        if d.name not in config:
+            config[d.name] = {
+                "label": d.name if not old_label else old_label,
+                "color": None if not old_color else old_color,
+                "linestyle": "solid" if not old_linestyle else old_linestyle
+            }
+    config = {
+        k: v for k, v in config.items() if not k in ("labels", "colors", "linestyles")
+    }
+    write_config(config_path, config)
+    print("移行作業が終了しました。一度終了します。")
+    exit()
 
 def get_config():
     if config_path.exists():
         config = read_config(config_path)
-        # config["labels"], config["colors"], config["linestyles"] に存在しないディレクトリがあれば追加
+        # ====== v1.1からv1.2への移行プログラム ======
+        if "labels" in config:
+            input("\033[31m ========= configの構造が違います。 =========\nv1.2からconfigファイルの構造が変化しました。\n移行作業を実行します。(v1.3からはこの移行機能は削除されます)\n\033[32mEnterで続行\033[0m")
+            return convert_version(config)
+        # ======================================
         for d in board_data_dirs:
-            if d.name not in config["labels"]:
-                config["labels"][d.name] = d.name
-            if d.name not in config["colors"]:
-                config["colors"][d.name] = None
-            if d.name not in config["linestyles"]:
-                config["linestyles"][d.name] = None
+            if d.name not in config:
+                config[d.name] = {
+                    "label": d.name,
+                    "color": None,
+                    "linestyle": "solid"
+                }
     else:
         config = {
-            "labels": {d.name: d.name for d in board_data_dirs},
-            "colors": {d.name: None for d in board_data_dirs},
-            "linestyles": {d.name: None for d in board_data_dirs},
+            d.name: {"label": d.name, "color": None, "linestyle": "solid"} for d in board_data_dirs
         }
 
     write_config(config_path, config)
@@ -213,16 +235,12 @@ if result:
         plt.plot(
             v.x,
             v.y,
-            label=config.get("labels", {}).get(k, k),
-            color=config.get("colors", {}).get(
-                k,
-                None,
-            ),
-            linestyle=config.get("linestyles", {}).get(k, "solid"),
+            **config.get(k, {})
         )
     plt.xlabel(result.x_label)
     plt.ylabel(result.y_label)
     plt.legend()
+    plt.tight_layout()  # 追加：はみ出しを防ぐ
     plt.savefig(
         output_dir / output_name,
     )
