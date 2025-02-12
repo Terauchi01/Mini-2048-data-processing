@@ -5,7 +5,16 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-from . import accuracy, error_abs, error_rel, histgram, scatter, survival, survival_diff
+from . import (
+    accuracy,
+    error_abs,
+    error_rel,
+    histgram,
+    scatter,
+    survival,
+    survival_diff,
+    acc_diff,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 board_dir = BASE_DIR.parent / "board_data"
@@ -55,20 +64,52 @@ class PlayerData:
             raise FileNotFoundError(f"{pp}が存在しません。")
         return pp
 
+<<<<<<< HEAD
+=======
+
+def convert_version(config):
+    backup = config_path.with_stem(f"{config_path.stem}-v1_1")
+    write_config(backup, config)
+    print(f"バックアップを{backup}に保存しました。")
+    for d in board_data_dirs:
+        old_label = config.get("labels", {}).get(d.name, d.name)
+        old_color = config.get("colors", {}).get(d.name, None)
+        old_linestyle = config.get("linestyles", {}).get(d.name, "solid")
+        if d.name not in config:
+            config[d.name] = {
+                "label": d.name if not old_label else old_label,
+                "color": None if not old_color else old_color,
+                "linestyle": "solid" if not old_linestyle else old_linestyle,
+            }
+    config = {
+        k: v for k, v in config.items() if not k in ("labels", "colors", "linestyles")
+    }
+    write_config(config_path, config)
+    print("移行作業が終了しました。一度終了します。")
+    exit()
+>>>>>>> a4b6d9f (acc-diff追加)
+
 
 def get_config():
     if config_path.exists():
         config = read_config(config_path)
+<<<<<<< HEAD
+=======
+        # ====== v1.1からv1.2への移行プログラム ======
+        if "labels" in config:
+            input(
+                "\033[31m ========= configの構造が違います。 =========\nv1.2からconfigファイルの構造が変化しました。\n移行作業を実行します。(v1.3からはこの移行機能は削除されます)\n\033[32mEnterで続行\033[0m"
+            )
+            return convert_version(config)
+        # ======================================
+>>>>>>> a4b6d9f (acc-diff追加)
         for d in board_data_dirs:
             if d.name not in config:
-                config[d.name] = {
-                    "label": d.name,
-                    "color": None,
-                    "linestyle": "solid"
-                }
+                config[d.name] = {"label": d.name, "color": None, "linestyle": "solid"}
     else:
         config = {
-            d.name: {"label": d.name, "color": None, "linestyle": "solid"} for d in board_data_dirs
+            d.name: {"label": d.name, "color": None, "linestyle": "solid"}
+            for d in board_data_dirs
         }
 
     write_config(config_path, config)
@@ -100,7 +141,16 @@ arg_parser = argparse.ArgumentParser(
 )
 arg_parser.add_argument(
     "graph",
-    choices=["acc", "err-rel", "err-abs", "surv", "surv-diff", "scatter", "histgram"],
+    choices=[
+        "acc",
+        "acc-diff",
+        "err-rel",
+        "err-abs",
+        "surv",
+        "surv-diff",
+        "scatter",
+        "histgram",
+    ],
     help="実行するグラフを指定する。",
 )
 arg_parser.add_argument(
@@ -158,6 +208,14 @@ if args.graph == "acc":
     result = accuracy.calc_accuracy_data(
         perfect_eval_files=pp_eval_files,
         player_eval_files=pr_eval_files,
+    )
+elif args.graph == "acc-diff":
+    output_name = args.output if args.output else "acc-diff.pdf"
+
+    result = acc_diff.acc_diff_plot(
+        perfect_eval_files=pp_eval_files,
+        player_eval_files=pr_eval_files,
+        config=config,
     )
 elif args.graph == "err-rel":
     output_name = args.output if args.output else "error_rel.pdf"
