@@ -64,45 +64,10 @@ class PlayerData:
             raise FileNotFoundError(f"{pp}が存在しません。")
         return pp
 
-<<<<<<< HEAD
-=======
-
-def convert_version(config):
-    backup = config_path.with_stem(f"{config_path.stem}-v1_1")
-    write_config(backup, config)
-    print(f"バックアップを{backup}に保存しました。")
-    for d in board_data_dirs:
-        old_label = config.get("labels", {}).get(d.name, d.name)
-        old_color = config.get("colors", {}).get(d.name, None)
-        old_linestyle = config.get("linestyles", {}).get(d.name, "solid")
-        if d.name not in config:
-            config[d.name] = {
-                "label": d.name if not old_label else old_label,
-                "color": None if not old_color else old_color,
-                "linestyle": "solid" if not old_linestyle else old_linestyle,
-            }
-    config = {
-        k: v for k, v in config.items() if not k in ("labels", "colors", "linestyles")
-    }
-    write_config(config_path, config)
-    print("移行作業が終了しました。一度終了します。")
-    exit()
->>>>>>> a4b6d9f (acc-diff追加)
-
 
 def get_config():
     if config_path.exists():
         config = read_config(config_path)
-<<<<<<< HEAD
-=======
-        # ====== v1.1からv1.2への移行プログラム ======
-        if "labels" in config:
-            input(
-                "\033[31m ========= configの構造が違います。 =========\nv1.2からconfigファイルの構造が変化しました。\n移行作業を実行します。(v1.3からはこの移行機能は削除されます)\n\033[32mEnterで続行\033[0m"
-            )
-            return convert_version(config)
-        # ======================================
->>>>>>> a4b6d9f (acc-diff追加)
         for d in board_data_dirs:
             if d.name not in config:
                 config[d.name] = {"label": d.name, "color": None, "linestyle": "solid"}
@@ -265,15 +230,11 @@ elif args.graph == "scatter":
 
 if result:
     for k, v in result.data.items():
-        plt.plot(
-            v.x,
-            v.y,
-            **config.get(k, {})
-        )
+        plt.plot(v.x, v.y, **config.get(k, {}))
     handles, labels = plt.gca().get_legend_handles_labels()
     sorted_pairs = sorted(zip(labels, handles), key=lambda x: x[0])
     labels, handles = zip(*sorted_pairs)
-    
+
     plt.xlabel(result.x_label)
     plt.ylabel(result.y_label)
     plt.legend(handles, labels)  # ソート後の順番で凡例を設定
