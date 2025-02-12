@@ -3,7 +3,7 @@ import re
 import sys
 import statistics
 
-# 指定したディレクトリの平均スコアと中央値を計算
+# 指定したディレクトリの平均スコア、中央値、標準偏差を計算
 def calculate_scores(directory):
     results = []
     for root, dirs, files in os.walk(directory):
@@ -25,9 +25,10 @@ def calculate_scores(directory):
                 if scores:
                     avg_score = sum(scores) / len(scores)
                     median_score = statistics.median(scores)
-                    results.append((dir_name, avg_score, median_score))
+                    std_dev = statistics.stdev(scores) if len(scores) > 1 else 0
+                    results.append((dir_name, avg_score, median_score, std_dev))
                 else:
-                    results.append((dir_name, None, None))
+                    results.append((dir_name, None, None, None))
     return results
 
 # メイン処理
@@ -59,7 +60,7 @@ def main():
     results = calculate_scores(base_directory)
 
     # スコアのある結果だけをフィルタリングしてソート
-    valid_results = [(name, avg, med) for name, avg, med in results if avg is not None]
+    valid_results = [(name, avg, med, std) for name, avg, med, std in results if avg is not None]
     sorted_results = sorted(valid_results, key=lambda x: x[1], reverse=True)
 
     # 表示件数を調整
@@ -68,11 +69,11 @@ def main():
 
     # 上位件数を表示
     print("\nTop Directories by Average Score:")
-    for name, avg, med in sorted_results[:display_count]:
-        print(f"{name}: Average={avg:.2f}, Median={med:.2f}")
+    for name, avg, med, std in sorted_results[:display_count]:
+        print(f"{name}: Average={avg:.2f}, Median={med:.2f}, Std Dev={std:.2f}")
 
     # スコアがないディレクトリを表示
-    no_score_results = [name for name, avg, med in results if avg is None]
+    no_score_results = [name for name, avg, med, std in results if avg is None]
     if no_score_results:
         print("\nDirectories with No Valid Scores:")
         for name in no_score_results:
