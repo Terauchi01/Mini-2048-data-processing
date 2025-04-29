@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 最大同時実行プロセス数
-max_jobs=32
+max_jobs=16
 
 # プロセス管理用
 joblist=()
@@ -12,11 +12,14 @@ game=100
 tuple=(4 6)
 simu=(3 50 400 3000 15000 55000)
 debug=0
+<<<<<<< Updated upstream
 randamTrun=(0 1 2)
+=======
+randamTrun=(0)
+>>>>>>> Stashed changes
 expand_count=(1 50)
 
 # 可変パラメータ
-c_values=(-1 1000)
 boltzmann_values=(0 1)
 expectimax_values=(0 1)
 
@@ -54,9 +57,16 @@ c++ mcts_NT.cpp -std=c++20 -DNT6 -O2 -o mcts_NT6 || {
 }
 
 for tuple_value in "${tuple[@]}"; do
-    for c in "${c_values[@]}"; do
-        for boltzmann in "${boltzmann_values[@]}"; do
-            for expectimax in "${expectimax_values[@]}"; do
+    for expectimax in "${expectimax_values[@]}"; do
+        # expectimaxが1の場合、c_valuesを-1だけに制限
+        if [ "$expectimax" -eq 1 ]; then
+            c_values=(-1)
+        else
+            c_values=(-1 1000)
+        fi
+
+        for c in "${c_values[@]}"; do
+            for boltzmann in "${boltzmann_values[@]}"; do
                 for depth in "${simu[@]}"; do
                     for random_turn in "${randamTrun[@]}"; do
                         for expand in "${expand_count[@]}"; do
