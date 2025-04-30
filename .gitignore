@@ -164,3 +164,6 @@ cython_debug/
 board_data/*
 config.json
 output/*
+*.dat
+*.txt
+*.log
