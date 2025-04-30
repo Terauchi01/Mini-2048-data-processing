@@ -9,7 +9,7 @@ joblist=()
 # 固定設定
 seeds=(0 1 2 3 4 5 6 7 8 9) # seed の配列
 game=100
-tuple=(4 6)
+tuple=(6)
 simu=(750 1500 3000 6000 12000 15000 24000 48000 55000)
 debug=0
 randamTrun=(0 1)

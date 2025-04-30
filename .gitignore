@@ -167,3 +167,4 @@ output/*
 *.dat
 *.txt
 *.log
+*.out
