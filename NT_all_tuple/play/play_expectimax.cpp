@@ -86,6 +86,7 @@ int progress_calculation(int board[9]) {
 
 // ファイル名からパラメータを抽出する構造体と関数を追加
 struct FileParams {
+  int NT;
   int tupleNumber;
   int multiStaging;
   int oi;
@@ -94,9 +95,16 @@ struct FileParams {
 };
 
 FileParams parseFileName(const char* filename) {
-  FileParams params = {0, 0, 0, 0, 0};
+  FileParams params = {0, 0, 0, 0, 0, 0};
   char basename[256];
   strcpy(basename, filename);
+
+  // ファイルパスから最後の'/'以降を取得
+  char* last_slash = strrchr(basename, '/');
+  char* actual_name = last_slash ? last_slash + 1 : basename;
+
+  // 最初の数字を取得してNTに設定
+  params.NT = atoi(actual_name);
 
   // .zip 拡張子を削除
   char* ext = strstr(basename, ".zip");
@@ -191,11 +199,12 @@ int main(int argc, char** argv) {
   char* evfile = argv[3];
   string number(1, evfile[7]);
   int number_of_depth = atoi(argv[4]);
-  printf("number_of_depth = %d\n", number_of_depth);
-  fs::create_directory("../../board_data");
-  string dir = "../../board_data/NT" + number + "_EXP" +
-               to_string(number_of_depth) + "/";
-  printf("dir = %s\n", dir.c_str());
+  FileParams params = parseFileName(evfile);
+  fs::create_directory("../board_data");
+  string dir = "../board_data/EXP_" + to_string(number_of_depth) + "_NT" +
+               to_string(params.NT) + "_TN" + to_string(params.tupleNumber) +
+               "_OI" + to_string(params.oi) + "_seed" + to_string(params.seed) +
+               "/";
   fs::create_directory(dir);
 
   double average = 0;
