@@ -10,7 +10,7 @@ wait_for_process() {
 
 MAX_THREADS=32  # 最大並列数
 SEED=0          # 初期シード値
-GAMES=1      # 実行するゲーム数
+GAMES=1000      # 実行するゲーム数
 JOB_COUNT=0     # 現在の並列ジョブ数
 
 # ログ保存ディレクトリ作成
