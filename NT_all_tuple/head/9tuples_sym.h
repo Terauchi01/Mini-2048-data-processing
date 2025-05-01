@@ -94,7 +94,7 @@ inline void init(int a, int stages) {
       errs[s][t] = new double[ARRAY_LENGTH]();
       aerrs[s][t] = new double[ARRAY_LENGTH]();
       updatecounts[s][t] = new int[ARRAY_LENGTH]();
-      for (int u = 0; u < ARRAY_LENGTH; u++) {
+      for (long long u = 0; u < ARRAY_LENGTH; u++) {
         evs[s][t][u] = 0;
         errs[s][t][u] = 0;
         aerrs[s][t][u] = 0;
@@ -288,7 +288,7 @@ inline double calcEv(const int* board) {
   double ev = 0;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      long long index = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
         index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
       }
@@ -306,7 +306,7 @@ inline double calcErr(const int* board) {
   double err = 0;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      long long index = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
         index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
       }
@@ -322,7 +322,7 @@ inline double calcAErr(const int* board) {
   double aerr = 0;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      long long index = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
         index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
       }
@@ -338,7 +338,7 @@ inline double calcMinAErr(const int* board) {
   double minAerr = DBL_MAX;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      long long index = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
         index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
       }
@@ -356,7 +356,7 @@ inline int calcMinCount(const int* board) {
   int minCount = INT_MAX;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      long long index = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
         index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
       }
@@ -374,7 +374,7 @@ inline void update(const int* board, double diff) {
 
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      long long index = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
         index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
       }
@@ -425,7 +425,7 @@ inline void init2(int a, int stages) {
     evs[s] = new double*[num_tuple];
     for (int t = 0; t < num_tuple; ++t) {
       evs[s][t] = new double[ARRAY_LENGTH]();
-      for (int u = 0; u < ARRAY_LENGTH; u++) {
+      for (long long u = 0; u < ARRAY_LENGTH; u++) {
         evs[s][t][u] = 0;
       }
     }
