@@ -390,5 +390,83 @@ inline void update(const int* board, double diff) {
     }
   }
 }
+// プレイ用の軽量初期化関数
+inline void init2(int a, int stages) {
+  num_stages = stages;
+  vector<vector<int>> combinations;
+  int total_combinations = pow(2, NUM_TUPLES);
+
+  for (int mask = 1; mask < total_combinations; ++mask) {
+    vector<int> current_combination;
+    for (int i = 0; i < NUM_TUPLES; ++i) {
+      if (mask & (1 << i)) {
+        current_combination.push_back(i);
+      }
+    }
+    combinations.push_back(current_combination);
+  }
+  auto customSort = [](const vector<int>& a, const vector<int>& b) {
+    if (a.size() != b.size()) {
+      return a.size() < b.size();
+    }
+    return a < b;
+  };
+  sort(combinations.begin(), combinations.end(), customSort);
+  num_tuple = combinations[a].size();
+
+  // evsのみ初期化
+  evs = new double**[num_stages];
+  pos = new int*[num_tuple];
+  for (int i = 0; i < num_tuple; i++) {
+    pos[i] = new int[TUPLE_SIZE];
+  }
+
+  for (int s = 0; s < num_stages; ++s) {
+    evs[s] = new double*[num_tuple];
+    for (int t = 0; t < num_tuple; ++t) {
+      evs[s][t] = new double[ARRAY_LENGTH]();
+      for (int u = 0; u < ARRAY_LENGTH; u++) {
+        evs[s][t][u] = 0;
+      }
+    }
+  }
+  possetting(a, combinations);
+}
+
+// プレイ用の軽量読み込み関数
+inline void readEvs2(FILE* fp) {
+  size_t count = 0;
+
+  // evsのみ読み込む
+  for (int s = 0; s < num_stages; ++s) {
+    for (int t = 0; t < num_tuple; ++t) {
+      count += fread(evs[s][t], sizeof(double), ARRAY_LENGTH, fp);
+    }
+  }
+  if (count != num_stages * num_tuple * ARRAY_LENGTH) {
+    fprintf(stderr, "in readEvs2(): evs read %ld elements (should be %lld)\n",
+            count,
+            static_cast<long long>(num_stages * num_tuple * ARRAY_LENGTH));
+  }
+
+  // 他のデータはスキップ
+  long long skip_size = sizeof(double) * ARRAY_LENGTH;  // errs, aerrs用
+  skip_size += sizeof(int) * ARRAY_LENGTH;              // updatecounts用
+  skip_size *= (num_stages * num_tuple);
+  fseek(fp, skip_size, SEEK_CUR);
+}
+inline void cleanup2() {
+  for (int s = 0; s < num_stages; ++s) {
+    for (int t = 0; t < num_tuple; ++t) {
+      delete[] evs[s][t];
+    }
+    delete[] evs[s];
+  }
+  delete[] evs;
+  for (int i = 0; i < num_tuple; i++) {
+    delete[] pos[i];
+  }
+  delete[] pos;
+}
 }  // namespace NT9
 #endif  // __TUPLES6_SYM_H__
