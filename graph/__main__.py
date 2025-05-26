@@ -14,12 +14,13 @@ from . import (
     survival,
     survival_diff,
     acc_diff,
+    scatter_v2,evals
 )
 
 BASE_DIR = Path(__file__).resolve().parent
 board_dir = BASE_DIR.parent / "board_data"
 board_data_dirs = [d for d in board_dir.iterdir() if d.is_dir()]
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 
 def read_config(path: Path) -> dict:
@@ -64,7 +65,6 @@ class PlayerData:
             raise FileNotFoundError(f"{pp}が存在しません。")
         return pp
 
-
 def get_config():
     if config_path.exists():
         config = read_config(config_path)
@@ -82,7 +82,7 @@ def get_config():
 
 
 def get_files():
-    is_include_PP = args.graph in ("surv", "surv-diff", "histgram")
+    is_include_PP = args.graph in ("surv", "surv-diff", "histgram", "evals")
     data = [
         PlayerData(d)
         for d in board_data_dirs
@@ -91,11 +91,11 @@ def get_files():
         and (is_include_PP or not re.search("PP", str(d)))
     ]
     state_files = [d.state_file for d in data]
+    pr_eval_files = [d.eval_file for d in data]
     if is_include_PP:
-        return [], [], [], state_files
+        return [], [], pr_eval_files, state_files
     pp_eval_files = [d.pp_eval_state for d in data]
     pp_eval_after_files = [d.pp_eval_after_state for d in data]
-    pr_eval_files = [d.eval_file for d in data]
     return pp_eval_files, pp_eval_after_files, pr_eval_files, state_files
 
 
@@ -114,7 +114,9 @@ arg_parser.add_argument(
         "surv",
         "surv-diff",
         "scatter",
+        "scatter_v2",
         "histgram",
+        "evals"
     ],
     help="実行するグラフを指定する。",
 )
@@ -222,6 +224,25 @@ elif args.graph == "scatter":
 
     result = scatter.plot_scatter(
         perfect_eval_files=pp_eval_after_files,
+        player_eval_files=pr_eval_files,
+        output=output_dir / output_name,
+        config=config,
+        is_show=args.is_show,
+    )
+elif args.graph == "scatter_v2":
+    output_name = args.output if args.output else "scatter.pdf"
+
+    result = scatter_v2.plot_scatter(
+        perfect_eval_files=pp_eval_after_files,
+        player_eval_files=pr_eval_files,
+        output=output_dir / output_name,
+        config=config,
+        is_show=args.is_show,
+    )
+elif args.graph == "evals":
+    output_name = args.output if args.output else "evals.pdf"
+
+    result = evals.calc_eval_data(
         player_eval_files=pr_eval_files,
         output=output_dir / output_name,
         config=config,
