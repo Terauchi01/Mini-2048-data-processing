@@ -133,7 +133,7 @@ FileParams parseFileName(const char* filename) {
 
 bool loadCompressedEvs(const char* filename) {
   FileParams params = parseFileName(filename);
-  init(params.tupleNumber, params.multiStaging);
+  init2(params.tupleNumber, params.multiStaging);
 
   gzFile gz_fp = gzopen(filename, "rb");
   if (!gz_fp) {
@@ -148,7 +148,7 @@ bool loadCompressedEvs(const char* filename) {
     return false;
   }
 
-  char buffer[4096];
+  char buffer[8192];
   int bytes_read;
   size_t total_bytes = 0;
 
@@ -177,7 +177,7 @@ bool loadCompressedEvs(const char* filename) {
   rewind(temp_fp);
 
   // データを読み込む
-  readEvs(temp_fp);
+  readEvs2(temp_fp);
 
   // クリーンアップ
   fclose(temp_fp);

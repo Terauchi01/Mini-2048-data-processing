@@ -11,8 +11,8 @@ wait_for_process() {
 MAX_THREADS=32  # 最大並列数
 SEED=0          # 初期シード値
 GAMES=1000         # 実行するゲーム数
-START_DEPTH=2   # 探索の開始深さ
-END_DEPTH=5     # 探索の終了深さ
+START_DEPTH=6   # 探索の開始深さ
+END_DEPTH=7     # 探索の終了深さ
 JOB_COUNT=0     # 現在の並列ジョブ数
 
 # depthのループを追加

@@ -17,7 +17,7 @@ JOB_COUNT=0     # 現在の並列ジョブ数
 mkdir -p play_logs
 
 # NT1〜NT9までループ
-for i in {1..9}; do
+for i in 9; do
     DIR="1-9_dat/NT${i}"  # zipファイルのディレクトリ
     PLAY_DIR="bin"  # 実行ファイルのディレクトリ
 
