@@ -430,7 +430,8 @@ inline int calcMinCount(const int* board) {
 }
 
 inline void update(const int* board, double diff) {
-  diff = diff / num_tuple / 8;
+  // diff = diff / (num_tuple * 8 * 2);
+  diff = diff / (num_tuple * 8);
 //   int s = get_stage(board);
 
   for (int i = 0; i < num_tuple; i++) {

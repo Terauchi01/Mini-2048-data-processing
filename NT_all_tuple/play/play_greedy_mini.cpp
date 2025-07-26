@@ -57,7 +57,7 @@ using namespace std;
 // デフォルトを NT6 に設定
 #include "../head/6tuples_mini.h"
 using namespace NT6;
-int nt = 6;
+int nt = 1;
 // #endif
 
 class GameOver {
@@ -85,17 +85,26 @@ int progress_calculation(int board[9]) {
 
 // ファイル名からパラメータを抽出する構造体と関数を追加
 struct FileParams {
+  int NT;
   int tupleNumber;
   int multiStaging;
   int oi;
   int seed;
   int c;
+  int mini;
 };
 
 FileParams parseFileName(const char* filename) {
-  FileParams params = {0, 0, 0, 0, 0};
+  FileParams params = {0, 0, 0, 0, 0, 0, 0};
   char basename[256];
   strcpy(basename, filename);
+
+  // ファイルパスから最後の'/'以降を取得
+  char* last_slash = strrchr(basename, '/');
+  char* actual_name = last_slash ? last_slash + 1 : basename;
+
+  // 最初の数字を取得してNTに設定
+  params.NT = atoi(actual_name);
 
   // .zip 拡張子を削除
   char* ext = strstr(basename, ".zip");
@@ -117,6 +126,8 @@ FileParams parseFileName(const char* filename) {
       params.seed = atoi(token + 4);
     else if (strncmp(token, "c", 1) == 0)
       params.c = atoi(token + 1);
+    else if (strncmp(token, "mini", 4) == 0)
+      params.mini = atoi(token + 4);
 
     token = strtok(NULL, "_");
   }
@@ -140,7 +151,7 @@ bool loadCompressedEvs(const char* filename) {
     return false;
   }
 
-  char buffer[4096];
+  char buffer[8192];
   int bytes_read;
   size_t total_bytes = 0;
 
@@ -186,16 +197,14 @@ int main(int argc, char** argv) {
   int seed = atoi(argv[1]);
   int game_count = atoi(argv[2]);
   char* evfile = argv[3];
-  fs::path filepath(evfile);
-  string filename_only = filepath.filename().string();
-  string number = "";
-  if (!filename_only.empty()) {
-      number = string(1, filename_only[0]);
-  }
-  fs::create_directory("../../board_data");
-  string dir = "../../board_data/NT" + number + "/";
-  printf("dir = %s\n", dir.c_str());
+  // string number(1, evfile[12]);
+  FileParams params = parseFileName(evfile);
+  fs::create_directory("../board_data");
+  string dir = "../board_data/NT" + to_string(params.NT) + "_TN" +
+               to_string(params.tupleNumber) + "_OI" + to_string(params.oi) +
+               "_seed" + to_string(params.seed) + "_mini" + to_string(params.mini) + "/";
   fs::create_directory(dir);
+  fs::path abs_path = fs::absolute(dir);
 
   double average = 0;
   // FILE* fp = fopen(evfile, "rb");

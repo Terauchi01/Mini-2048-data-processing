@@ -16,49 +16,49 @@ namespace fs = std::filesystem;
 using namespace std;
 
 #include "../head/Game2048_3_3.h"
-// #define NT4A
-#if defined(T1)
-#include "../head/1tuples_sym.h"
-using namespace NT1;
-int nt = 1;
-#elif defined(T2)
-#include "../head/2tuples_sym.h"
-using namespace NT2;
-int nt = 2;
-#elif defined(T3)
-#include "../head/3tuples_sym.h"
-using namespace NT3;
-int nt = 3;
-#elif defined(T4)
-#include "../head/4tuples_sym.h"
-using namespace NT4;
-int nt = 4;
-#elif defined(T5)
-#include "../head/5tuples_sym.h"
-using namespace NT5;
-int nt = 5;
-#elif defined(T6)
-#include "../head/6tuples_sym.h"
-using namespace NT6;
-int nt = 6;
-#elif defined(T7)
-#include "../head/7tuples_sym.h"
-using namespace NT7;
-int nt = 7;
-#elif defined(T8)
-#include "../head/8tuples_sym.h"
-using namespace NT8;
-int nt = 8;
-#elif defined(T9)
-#include "../head/9tuples_sym.h"
-using namespace NT9;
-int nt = 9;
-#else
+// // #define NT4A
+// #if defined(T1)
+// #include "../head/1tuples_sym.h"
+// using namespace NT1;
+// int nt = 1;
+// #elif defined(T2)
+// #include "../head/2tuples_sym.h"
+// using namespace NT2;
+// int nt = 2;
+// #elif defined(T3)
+// #include "../head/3tuples_sym.h"
+// using namespace NT3;
+// int nt = 3;
+// #elif defined(T4)
+// #include "../head/4tuples_sym.h"
+// using namespace NT4;
+// int nt = 4;
+// #elif defined(T5)
+// #include "../head/5tuples_sym.h"
+// using namespace NT5;
+// int nt = 5;
+// #elif defined(T6)
+// #include "../head/6tuples_sym.h"
+// using namespace NT6;
+// int nt = 6;
+// #elif defined(T7)
+// #include "../head/7tuples_sym.h"
+// using namespace NT7;
+// int nt = 7;
+// #elif defined(T8)
+// #include "../head/8tuples_sym.h"
+// using namespace NT8;
+// int nt = 8;
+// #elif defined(T9)
+// #include "../head/9tuples_sym.h"
+// using namespace NT9;
+// int nt = 9;
+// #else
 // デフォルトを NT6 に設定
-#include "../head/6tuples_sym.h"
+#include "../head/6tuples_mini_0.h"
 using namespace NT6;
 int nt = 1;
-#endif
+// #endif
 
 class GameOver {
  public:
@@ -91,10 +91,11 @@ struct FileParams {
   int oi;
   int seed;
   int c;
+  int mini;
 };
 
 FileParams parseFileName(const char* filename) {
-  FileParams params = {0, 0, 0, 0, 0, 0};
+  FileParams params = {0, 0, 0, 0, 0, 0, 0};
   char basename[256];
   strcpy(basename, filename);
 
@@ -125,6 +126,8 @@ FileParams parseFileName(const char* filename) {
       params.seed = atoi(token + 4);
     else if (strncmp(token, "c", 1) == 0)
       params.c = atoi(token + 1);
+    else if (strncmp(token, "mini", 4) == 0)
+      params.mini = atoi(token + 4);
 
     token = strtok(NULL, "_");
   }
@@ -199,7 +202,7 @@ int main(int argc, char** argv) {
   fs::create_directory("../board_data");
   string dir = "../board_data/NT" + to_string(params.NT) + "_TN" +
                to_string(params.tupleNumber) + "_OI" + to_string(params.oi) +
-               "_seed" + to_string(params.seed) + "_normal/";
+               "_seed" + to_string(params.seed) + "_mini" + to_string(params.mini) + "/";
   fs::create_directory(dir);
   fs::path abs_path = fs::absolute(dir);
 

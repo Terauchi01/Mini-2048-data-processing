@@ -16,7 +16,7 @@ using namespace std;
  */
 namespace NT6 {
 #define TUPLE_SIZE 6
-#define NUM_STAGES 2
+#define NUM_STAGES 3
 constexpr long long VARIATION_TILE = 11;
 constexpr long long ARRAY_LENGTH =
     (VARIATION_TILE * VARIATION_TILE * VARIATION_TILE * VARIATION_TILE *
@@ -34,7 +34,7 @@ const int poss[NUM_TUPLES][TUPLE_SIZE] = {
 };
 
 int num_tuple = 2;
-int num_stages = 2;  // NUM_STAGESを変数化
+int num_stages = 3;  // NUM_STAGESを変数化（3つのステージに変更）
 int** pos = nullptr;
 
 // 動的メモリ管理用ポインタ
@@ -136,7 +136,7 @@ inline void cleanup() {
 }
 
 inline void initEvs(double initEv) {
-  double iev = initEv / num_tuple / 8;
+  double iev = initEv / num_tuple / 8 / 3;  // 3つのステージで分割
   for (int s = 0; s < num_stages; s++) {
     for (int i = 0; i < num_tuple; i++) {
       for (long long j = 0; j < ARRAY_LENGTH; j++) {
@@ -288,17 +288,94 @@ inline int get_stage(const int* board) {
   return s;
 }
 
+//一番下の評価関数用フィルター
+inline void get_filterd_board_upper(const int* board, int* filterd_board) {
+//   int s = get_stage(board);
+  for (int i = 0; i < 9; i++) {
+    if(board[i] > 4){
+        filterd_board[i] = 5;
+    }
+    else{
+      filterd_board[i] = board[i];
+    }
+  }
+}
+
+//真ん中の評価関数用フィルター
+inline void get_filterd_board_mid(const int* board, int* filterd_board) {
+//   int s = get_stage(board);
+  for (int i = 0; i < 9; i++) {
+    if(board[i] < 4 && board[i] != 0){
+        filterd_board[i] = 1;
+    }
+    else if(board[i] > 7){
+        filterd_board[i] = 8;
+    }
+    else{
+      filterd_board[i] = board[i];
+    }
+  }
+}
+
+//一番上の評価関数用フィルター
+inline void get_filterd_board_under(const int* board, int* filterd_board) {
+//   int s = get_stage(board);
+  for (int i = 0; i < 9; i++) {
+    if(board[i] < 7 && board[i] != 0){
+        filterd_board[i] = 1;
+    }
+    else{
+      filterd_board[i] = board[i];
+    }
+  }
+}
+
 inline double calcEv(const int* board) {
-  int s = get_stage(board);
+//   int s = get_stage(board);
+    int filtered_board_upper[9];
+    int filtered_board_mid[9];
+    int filtered_board_under[9];
+    get_filterd_board_upper(board, filtered_board_upper);
+    get_filterd_board_mid(board, filtered_board_mid);
+    get_filterd_board_under(board, filtered_board_under);
+    
+    // デバッグ用：各ボードの内容を表示
+    // printf("Original board:\n");
+    // for (int i = 0; i < 9; i++) {
+    //     printf("%d ", board[i]);
+    //     if (i % 3 == 2) printf("\n");
+    // }
+    // printf("\nFiltered board upper:\n");
+    // for (int i = 0; i < 9; i++) {
+    //     printf("%d ", filtered_board_upper[i]);
+    //     if (i % 3 == 2) printf("\n");
+    // }
+    // printf("\nFiltered board mid:\n");
+    // for (int i = 0; i < 9; i++) {
+    //     printf("%d ", filtered_board_mid[i]);
+    //     if (i % 3 == 2) printf("\n");
+    // }
+    // printf("\nFiltered board under:\n");
+    // for (int i = 0; i < 9; i++) {
+    //     printf("%d ", filtered_board_under[i]);
+    //     if (i % 3 == 2) printf("\n");
+    // }
+    // printf("---\n");
+    
 
   double ev = 0;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+    //   int index = 0;
+    int index_upper = 0,index_under = 0,index_mid = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
-        index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
+        index_upper = index_upper * VARIATION_TILE + filtered_board_upper[sympos[j][pos[i][k]]];
+        index_mid = index_mid * VARIATION_TILE + filtered_board_mid[sympos[j][pos[i][k]]];
+        index_under = index_under * VARIATION_TILE + filtered_board_under[sympos[j][pos[i][k]]];
       }
-      ev += evs[s][i][index];
+      ev += evs[0][i][index_upper];
+      ev += evs[1][i][index_mid];
+      ev += evs[2][i][index_under];
       // printf(" %f", evs[s][i][index]);
     }
   }
@@ -307,49 +384,80 @@ inline double calcEv(const int* board) {
 }
 
 inline double calcErr(const int* board) {
-  int s = get_stage(board);
+  int filtered_board_upper[9];
+  int filtered_board_mid[9];
+  int filtered_board_under[9];
+  get_filterd_board_upper(board, filtered_board_upper);
+  get_filterd_board_mid(board, filtered_board_mid);
+  get_filterd_board_under(board, filtered_board_under);
 
   double err = 0;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      int index_upper = 0, index_mid = 0, index_under = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
-        index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
+        index_upper = index_upper * VARIATION_TILE + filtered_board_upper[sympos[j][pos[i][k]]];
+        index_mid = index_mid * VARIATION_TILE + filtered_board_mid[sympos[j][pos[i][k]]];
+        index_under = index_under * VARIATION_TILE + filtered_board_under[sympos[j][pos[i][k]]];
       }
-      err += errs[s][i][index];
+      err += errs[0][i][index_upper];
+      err += errs[1][i][index_mid];
+      err += errs[2][i][index_under];
     }
   }
   return err;
 }
 
 inline double calcAErr(const int* board) {
-  int s = get_stage(board);
+  int filtered_board_upper[9];
+  int filtered_board_mid[9];
+  int filtered_board_under[9];
+  get_filterd_board_upper(board, filtered_board_upper);
+  get_filterd_board_mid(board, filtered_board_mid);
+  get_filterd_board_under(board, filtered_board_under);
 
   double aerr = 0;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      int index_upper = 0, index_mid = 0, index_under = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
-        index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
+        index_upper = index_upper * VARIATION_TILE + filtered_board_upper[sympos[j][pos[i][k]]];
+        index_mid = index_mid * VARIATION_TILE + filtered_board_mid[sympos[j][pos[i][k]]];
+        index_under = index_under * VARIATION_TILE + filtered_board_under[sympos[j][pos[i][k]]];
       }
-      aerr += aerrs[s][i][index];
+      aerr += aerrs[0][i][index_upper];
+      aerr += aerrs[1][i][index_mid];
+      aerr += aerrs[2][i][index_under];
     }
   }
   return aerr;
 }
 
 inline double calcMinAErr(const int* board) {
-  int s = get_stage(board);
+  int filtered_board_upper[9];
+  int filtered_board_mid[9];
+  int filtered_board_under[9];
+  get_filterd_board_upper(board, filtered_board_upper);
+  get_filterd_board_mid(board, filtered_board_mid);
+  get_filterd_board_under(board, filtered_board_under);
 
   double minAerr = DBL_MAX;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      int index_upper = 0, index_mid = 0, index_under = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
-        index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
+        index_upper = index_upper * VARIATION_TILE + filtered_board_upper[sympos[j][pos[i][k]]];
+        index_mid = index_mid * VARIATION_TILE + filtered_board_mid[sympos[j][pos[i][k]]];
+        index_under = index_under * VARIATION_TILE + filtered_board_under[sympos[j][pos[i][k]]];
       }
-      if (minAerr > aerrs[s][i][index]) {
-        minAerr = aerrs[s][i][index];
+      if (minAerr > aerrs[0][i][index_upper]) {
+        minAerr = aerrs[0][i][index_upper];
+      }
+      if (minAerr > aerrs[1][i][index_mid]) {
+        minAerr = aerrs[1][i][index_mid];
+      }
+      if (minAerr > aerrs[2][i][index_under]) {
+        minAerr = aerrs[2][i][index_under];
       }
     }
   }
@@ -357,17 +465,30 @@ inline double calcMinAErr(const int* board) {
 }
 
 inline int calcMinCount(const int* board) {
-  int s = get_stage(board);
+  int filtered_board_upper[9];
+  int filtered_board_mid[9];
+  int filtered_board_under[9];
+  get_filterd_board_upper(board, filtered_board_upper);
+  get_filterd_board_mid(board, filtered_board_mid);
+  get_filterd_board_under(board, filtered_board_under);
 
   int minCount = INT_MAX;
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      int index_upper = 0, index_mid = 0, index_under = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
-        index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
+        index_upper = index_upper * VARIATION_TILE + filtered_board_upper[sympos[j][pos[i][k]]];
+        index_mid = index_mid * VARIATION_TILE + filtered_board_mid[sympos[j][pos[i][k]]];
+        index_under = index_under * VARIATION_TILE + filtered_board_under[sympos[j][pos[i][k]]];
       }
-      if (minCount > updatecounts[s][i][index]) {
-        minCount = updatecounts[s][i][index];
+      if (minCount > updatecounts[0][i][index_upper]) {
+        minCount = updatecounts[0][i][index_upper];
+      }
+      if (minCount > updatecounts[1][i][index_mid]) {
+        minCount = updatecounts[1][i][index_mid];
+      }
+      if (minCount > updatecounts[2][i][index_under]) {
+        minCount = updatecounts[2][i][index_under];
       }
     }
   }
@@ -375,24 +496,57 @@ inline int calcMinCount(const int* board) {
 }
 
 inline void update(const int* board, double diff) {
-  diff = diff / num_tuple / 8;
-  int s = get_stage(board);
+  // 3つのステージがあるので3で割る
+  diff = diff / (num_tuple * 8 * 3);
+  
+  int filtered_board_upper[9];
+  int filtered_board_mid[9];
+  int filtered_board_under[9];
+  get_filterd_board_upper(board, filtered_board_upper);
+  get_filterd_board_mid(board, filtered_board_mid);
+  get_filterd_board_under(board, filtered_board_under);
 
   for (int i = 0; i < num_tuple; i++) {
     for (int j = 0; j < 8; j++) {
-      int index = 0;
+      int index_upper = 0, index_mid = 0, index_under = 0;
       for (int k = 0; k < TUPLE_SIZE; k++) {
-        index = index * VARIATION_TILE + board[sympos[j][pos[i][k]]];
+        index_upper = index_upper * VARIATION_TILE + filtered_board_upper[sympos[j][pos[i][k]]];
+        index_mid = index_mid * VARIATION_TILE + filtered_board_mid[sympos[j][pos[i][k]]];
+        index_under = index_under * VARIATION_TILE + filtered_board_under[sympos[j][pos[i][k]]];
       }
-      aerrs[s][i][index] += fabs(diff);
-      errs[s][i][index] += diff * 0.5;
-      if (aerrs[s][i][index] == 0) {
-        evs[s][i][index] += diff * 0.5;
+      
+      // upper フィルター (ステージ0)
+      aerrs[0][i][index_upper] += fabs(diff);
+      errs[0][i][index_upper] += diff;
+      if (aerrs[0][i][index_upper] == 0) {
+        evs[0][i][index_upper] += diff;
       } else {
-        evs[s][i][index] +=
-            diff * min((fabs(errs[s][i][index]) / aerrs[s][i][index]), 0.5);
+        evs[0][i][index_upper] +=
+            diff * (fabs(errs[0][i][index_upper]) / aerrs[0][i][index_upper]);
       }
-      updatecounts[s][i][index]++;
+      updatecounts[0][i][index_upper]++;
+      
+      // mid フィルター (ステージ1)
+      aerrs[1][i][index_mid] += fabs(diff);
+      errs[1][i][index_mid] += diff;
+      if (aerrs[1][i][index_mid] == 0) {
+        evs[1][i][index_mid] += diff;
+      } else {
+        evs[1][i][index_mid] +=
+            diff * (fabs(errs[1][i][index_mid]) / aerrs[1][i][index_mid]);
+      }
+      updatecounts[1][i][index_mid]++;
+      
+      // under フィルター (ステージ2)
+      aerrs[2][i][index_under] += fabs(diff);
+      errs[2][i][index_under] += diff;
+      if (aerrs[2][i][index_under] == 0) {
+        evs[2][i][index_under] += diff;
+      } else {
+        evs[2][i][index_under] +=
+            diff * (fabs(errs[2][i][index_under]) / aerrs[2][i][index_under]);
+      }
+      updatecounts[2][i][index_under]++;
     }
   }
 }
