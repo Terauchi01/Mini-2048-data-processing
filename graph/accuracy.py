@@ -16,12 +16,14 @@ def calc_accuracy(
     pp_ehp: EvalAndHandProgress,
     pr_ehp: EvalAndHandProgress,
 ):
-    count = 0
-    for pp_eval in pp_ehp.idx:
-        for pr_eval in pr_ehp.idx:
-            if pp_eval == pr_eval:
-                count += 1
-    return count / len(pr_ehp.idx)
+    pp_best_moves = set(pp_ehp.idx)
+    pr_best_moves = set(pr_ehp.idx)
+    
+    # playerの最善手のうち、perfect playerの最善手と一致するものの数
+    common_moves = pp_best_moves.intersection(pr_best_moves)
+    
+    # プレイヤーの最善手総数で割る
+    return len(common_moves) / len(pr_ehp.idx)
 
 
 def calc_accuracy_data(
