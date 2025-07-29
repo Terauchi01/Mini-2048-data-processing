@@ -16,50 +16,49 @@ namespace fs = std::filesystem;
 using namespace std;
 
 #include "../head/Game2048_3_3.h"
-// #define NT4A
-#if defined(T1)
-#include "../head/1tuples_sym.h"
-using namespace NT1;
-int nt = 1;
-#elif defined(T2)
-#include "../head/2tuples_sym.h"
-using namespace NT2;
-int nt = 2;
-#elif defined(T3)
-#include "../head/3tuples_sym.h"
-using namespace NT3;
-int nt = 3;
-#elif defined(T4)
-#include "../head/4tuples_sym.h"
-using namespace NT4;
-int nt = 4;
-#elif defined(T5)
-#include "../head/5tuples_sym.h"
-using namespace NT5;
-int nt = 5;
-#elif defined(T6)
-#include "../head/6tuples_sym.h"
-using namespace NT6;
-int nt = 6;
-#elif defined(T7)
-#include "../head/7tuples_sym.h"
-using namespace NT7;
-int nt = 7;
-#elif defined(T8)
-#include "../head/8tuples_sym.h"
-using namespace NT8;
-int nt = 8;
-#elif defined(T9)
-#include "../head/9tuples_sym.h"
-using namespace NT9;
-int nt = 9;
-#else
+// // #define NT4A
+// #if defined(T1)
+// #include "../head/1tuples_sym.h"
+// using namespace NT1;
+// int nt = 1;
+// #elif defined(T2)
+// #include "../head/2tuples_sym.h"
+// using namespace NT2;
+// int nt = 2;
+// #elif defined(T3)
+// #include "../head/3tuples_sym.h"
+// using namespace NT3;
+// int nt = 3;
+// #elif defined(T4)
+// #include "../head/4tuples_sym.h"
+// using namespace NT4;
+// int nt = 4;
+// #elif defined(T5)
+// #include "../head/5tuples_sym.h"
+// using namespace NT5;
+// int nt = 5;
+// #elif defined(T6)
+// #include "../head/6tuples_sym.h"
+// using namespace NT6;
+// int nt = 6;
+// #elif defined(T7)
+// #include "../head/7tuples_sym.h"
+// using namespace NT7;
+// int nt = 7;
+// #elif defined(T8)
+// #include "../head/8tuples_sym.h"
+// using namespace NT8;
+// int nt = 8;
+// #elif defined(T9)
+// #include "../head/9tuples_sym.h"
+// using namespace NT9;
+// int nt = 9;
+// #else
 // デフォルトを NT6 に設定
-#include "../head/1tuples_sym.h"
-using namespace NT1;
+#include "../head/6tuples_mini_2.h"
+using namespace NT6;
 int nt = 1;
-#endif
-#include "../head/expmax.h"
+// #endif
 
 class GameOver {
  public:
@@ -92,10 +91,11 @@ struct FileParams {
   int oi;
   int seed;
   int c;
+  int mini;
 };
 
 FileParams parseFileName(const char* filename) {
-  FileParams params = {0, 0, 0, 0, 0, 0};
+  FileParams params = {0, 0, 0, 0, 0, 0, 0};
   char basename[256];
   strcpy(basename, filename);
 
@@ -126,6 +126,8 @@ FileParams parseFileName(const char* filename) {
       params.seed = atoi(token + 4);
     else if (strncmp(token, "c", 1) == 0)
       params.c = atoi(token + 1);
+    else if (strncmp(token, "mini", 4) == 0)
+      params.mini = atoi(token + 4);
 
     token = strtok(NULL, "_");
   }
@@ -134,7 +136,7 @@ FileParams parseFileName(const char* filename) {
 
 bool loadCompressedEvs(const char* filename) {
   FileParams params = parseFileName(filename);
-  init2(params.tupleNumber, params.multiStaging);
+  init(params.tupleNumber, params.multiStaging);
 
   gzFile gz_fp = gzopen(filename, "rb");
   if (!gz_fp) {
@@ -149,7 +151,7 @@ bool loadCompressedEvs(const char* filename) {
     return false;
   }
 
-  char buffer[4096];
+  char buffer[8192];
   int bytes_read;
   size_t total_bytes = 0;
 
@@ -178,7 +180,7 @@ bool loadCompressedEvs(const char* filename) {
   rewind(temp_fp);
 
   // データを読み込む
-  readEvs2(temp_fp);
+  readEvs(temp_fp);
 
   // クリーンアップ
   fclose(temp_fp);
@@ -188,24 +190,21 @@ bool loadCompressedEvs(const char* filename) {
 }
 
 int main(int argc, char** argv) {
-  if (argc < 3 + 1) {
-    fprintf(
-        stderr,
-        "Usage: playgreedy <seed> <game_counts> <evfile> <number_of_depth>\n");
+  if (argc < 2 + 1) {
+    fprintf(stderr, "Usage: playgreedy <seed> <game_counts> <evfile>\n");
     exit(1);
   }
   int seed = atoi(argv[1]);
   int game_count = atoi(argv[2]);
   char* evfile = argv[3];
-  string number(1, evfile[7]);
-  int number_of_depth = atoi(argv[4]);
+  // string number(1, evfile[12]);
   FileParams params = parseFileName(evfile);
   fs::create_directory("../board_data");
-  string dir = "../board_data/EXP_" + to_string(number_of_depth) + "_NT" +
-               to_string(params.NT) + "_TN" + to_string(params.tupleNumber) +
-               "_OI" + to_string(params.oi) + "_seed" + to_string(params.seed) +
-               "/";
+  string dir = "../board_data/NT" + to_string(params.NT) + "_TN" +
+               to_string(params.tupleNumber) + "_OI" + to_string(params.oi) +
+               "_seed" + to_string(params.seed) + "_mini" + to_string(params.mini) + "/";
   fs::create_directory(dir);
+  fs::path abs_path = fs::absolute(dir);
 
   double average = 0;
   // FILE* fp = fopen(evfile, "rb");
@@ -241,20 +240,19 @@ int main(int argc, char** argv) {
       for (int i = 0; i < n; i++) {
         evals[i] = -1.0e10;
       }
-      // for (int d = 0; d < 4; d++) {
-      //   if (play(d, state, &copy)) {
-      //     // int index = to_index(copy.board);
-      //     evals[d] = calcEv(copy.board);
-      //     // printf("%f ",evals[d]);
-      //     if (max_evr == evals[d]) {
-      //     }
-      //     if (max_evr < evals[d]) {
-      //       max_evr = evals[d];
-      //       selected = d;
-      //     }
-      //   }
-      // }
-      selected = expectimax(state, number_of_depth, evals);
+      for (int d = 0; d < 4; d++) {
+        if (play(d, state, &copy)) {
+          // int index = to_index(copy.board);
+          evals[d] = calcEv(copy.board);
+          // printf("%f ",evals[d]);
+          if (max_evr == evals[d]) {
+          }
+          if (max_evr < evals[d]) {
+            max_evr = evals[d];
+            selected = d;
+          }
+        }
+      }
       // printf("\n");
       state_list.push_back(
           array<int, 9>{state.board[0], state.board[1], state.board[2],

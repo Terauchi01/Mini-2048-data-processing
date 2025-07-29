@@ -55,8 +55,8 @@ using namespace NT9;
 int nt = 9;
 #else
 // デフォルトを NT6 に設定
-#include "../head/1tuples_sym.h"
-using namespace NT1;
+#include "../head/6tuples_sym.h"
+using namespace NT6;
 int nt = 1;
 #endif
 
@@ -148,7 +148,7 @@ bool loadCompressedEvs(const char* filename) {
     return false;
   }
 
-  char buffer[4096];
+  char buffer[8192];
   int bytes_read;
   size_t total_bytes = 0;
 
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
   fs::create_directory("../board_data");
   string dir = "../board_data/NT" + to_string(params.NT) + "_TN" +
                to_string(params.tupleNumber) + "_OI" + to_string(params.oi) +
-               "_seed" + to_string(params.seed) + "/";
+               "_seed" + to_string(params.seed) + "_normal/";
   fs::create_directory(dir);
   fs::path abs_path = fs::absolute(dir);
 
