@@ -61,6 +61,7 @@ def plot_scatter(
     plt.ylabel(
         "player"
     )
+    plt.legend()
     plt.tight_layout()
     plt.savefig(output.with_stem(f"{output.stem}_v2"))
     print(output.with_stem(f"{output.stem}_v2"))

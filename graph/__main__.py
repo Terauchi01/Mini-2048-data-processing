@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 from . import (
     accuracy,
+    boxplot,
     error_abs,
     error_rel,
     histgram,
@@ -14,13 +15,15 @@ from . import (
     survival,
     survival_diff,
     acc_diff,
-    scatter_v2,evals
+    scatter_v2,
+    evals,
+    progress_eval_accuracy
 )
 
 BASE_DIR = Path(__file__).resolve().parent
 board_dir = BASE_DIR.parent / "board_data"
 board_data_dirs = [d for d in board_dir.iterdir() if d.is_dir()]
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 
 def read_config(path: Path) -> dict:
@@ -82,7 +85,8 @@ def get_config():
 
 
 def get_files():
-    is_include_PP = args.graph in ("surv", "surv-diff", "histgram", "evals")
+    is_include_PP = args.graph in ("surv", "surv-diff", "histgram", "evals", "boxplot-eval")
+    
     data = [
         PlayerData(d)
         for d in board_data_dirs
@@ -92,8 +96,10 @@ def get_files():
     ]
     state_files = [d.state_file for d in data]
     pr_eval_files = [d.eval_file for d in data]
+    
     if is_include_PP:
         return [], [], pr_eval_files, state_files
+    
     pp_eval_files = [d.pp_eval_state for d in data]
     pp_eval_after_files = [d.pp_eval_after_state for d in data]
     return pp_eval_files, pp_eval_after_files, pr_eval_files, state_files
@@ -116,7 +122,9 @@ arg_parser.add_argument(
         "scatter",
         "scatter_v2",
         "histgram",
-        "evals"
+        "evals",
+        "boxplot-eval",
+        "pea",
     ],
     help="実行するグラフを指定する。",
 )
@@ -148,6 +156,25 @@ arg_parser.add_argument(
     "--is-show",
     action="store_true",
     help="グラフ作成完了時に表示する。",
+)
+boxplot_group = arg_parser.add_mutually_exclusive_group()
+boxplot_group.add_argument(
+    "--min-progress",
+    type=int,
+    default=1,
+    help="箱ひげ図の最小progress値を指定する（boxplot系のみ）。",
+)
+boxplot_group.add_argument(
+    "--max-progress",
+    type=int,
+    default=250,
+    help="箱ひげ図の最大progress値を指定する（boxplot系のみ）。",
+)
+boxplot_group.add_argument(
+    "--bin-width",
+    type=int,
+    default=10,
+    help="箱ひげ図のビン幅を指定する（boxplot系のみ）。",
 )
 arg_parser.add_argument(
     "--version",
@@ -248,6 +275,32 @@ elif args.graph == "evals":
         config=config,
         is_show=args.is_show,
     )
+elif args.graph == "boxplot-eval":
+    output_name = args.output if args.output else "boxplot_eval.pdf"
+
+    result = boxplot.plot_boxplot_eval_ratios(
+        player_eval_files=pr_eval_files,
+        output=output_dir / output_name,
+        config=config,
+        is_show=args.is_show,
+        min_progress=args.min_progress,
+        max_progress=args.max_progress,
+        bin_width=args.bin_width,
+    )
+elif args.graph == "pea":
+    output_name = args.output if args.output else "boxplot_pea.pdf"
+
+    result = progress_eval_accuracy.create_progress_eval_accuracy_plot(
+        perfect_eval_files=pp_eval_files,
+        player_eval_files=pr_eval_files,
+        pp_eval_file=board_dir / "PP" / "eval.txt",
+        output=output_dir / output_name,
+        config=config,
+        is_show=args.is_show,
+        min_progress=args.min_progress,
+        max_progress=args.max_progress,
+        bin_width=args.bin_width,
+    )
 
 if result:
     for k, v in result.data.items():
@@ -265,5 +318,4 @@ if result:
     )
     if args.is_show:
         plt.show()
-rel_path = (output_dir / output_name).relative_to(BASE_DIR.parent)
-print(f"{rel_path}を作成しました。")
+

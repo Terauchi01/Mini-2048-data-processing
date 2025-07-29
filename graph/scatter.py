@@ -3,9 +3,11 @@ import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from .common import get_eval_and_hand_progress
 
+PERFECT_AVG_EVAL = 5468.49  # パーフェクトプレイヤの平均評価値
 
 def get_evals(eval_file: Path):
     eval_txt = eval_file.read_text("utf-8")
@@ -29,6 +31,15 @@ def plot_scatter(
     ):
         pp_evals = get_evals(perfect_eval_file)
         pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
+        eval_txt = player_eval_file.read_text("utf-8")
+        # gameoverの行を全て抽出
+        gameover_lines = re.findall(r"game.*\n?", eval_txt)
+        # gameoverの行からscoreを抽出し、平均得点を算出
+        gameover_scores = [
+            float(re.search(r"score: (\d+)", line).group(1)) for line in gameover_lines
+        ]
+        avg_score = np.mean(gameover_scores) if gameover_scores else 0
+        print(f"{avg_score=}")
 
         assert len(pp_evals) == len(pr_eval_and_hand_progress), (
             f"データ数が異なります。{len(pp_evals)=}, {len(pr_eval_and_hand_progress)=}"
@@ -53,6 +64,13 @@ def plot_scatter(
             [0, 6000],
             color="gray",
             linestyle="dashed",
+        )
+        plt.plot(
+            [i for i in range(0, 6001)],
+            [avg_score / PERFECT_AVG_EVAL * i for i in range(0, 6001)],
+            color="red",
+            linestyle="dashed",
+            
         )
         plt.xlabel("perfect")
         plt.ylabel(

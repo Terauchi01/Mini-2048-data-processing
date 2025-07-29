@@ -49,8 +49,8 @@ def calc_eval_data(
     plt.legend()
     plt.tight_layout()  # 追加：はみ出しを防ぐ
     
-    plt.savefig(output.with_stem(f"{output.stem}_v2"))
-    print(output.with_stem(f"{output.stem}_v2"))
+    plt.savefig(output.with_stem(f"{output.stem}"))
+    print(output.with_stem(f"saved as {output.stem}"))
     if is_show:
         plt.show()
     plt.close()
