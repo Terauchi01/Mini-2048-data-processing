@@ -5,6 +5,42 @@ from pathlib import Path
 import numpy as np
 
 
+class PlayerData:
+    def __init__(self, target_dir: Path, config: dict):
+        self.name = target_dir.name
+        self.target_dir = target_dir
+        self.pp_dir = self.target_dir.parent / "PP"
+        self.config = config[self.name] if config and self.name in config else {}
+
+    @property
+    def state_file(self):
+        state_file = self.target_dir / "state.txt"
+        if not state_file.exists():
+            raise FileNotFoundError(f"{state_file}が存在しません。")
+        return state_file
+
+    @property
+    def eval_file(self):
+        eval_file = self.target_dir / "eval.txt"
+        if not eval_file.exists():
+            raise FileNotFoundError(f"{eval_file}が存在しません。")
+        return eval_file
+
+    @property
+    def pp_eval_state(self):
+        pp: Path = self.pp_dir / f"eval-state-{self.name}.txt"
+        if not pp.exists():
+            raise FileNotFoundError(f"{pp}が存在しません。")
+        return pp
+
+    @property
+    def pp_eval_after_state(self):
+        pp: Path = self.pp_dir / f"eval-after-state-{self.name}.txt"
+        if not pp.exists():
+            raise FileNotFoundError(f"{pp}が存在しません。")
+        return pp
+
+
 @dataclass
 class EvalAndHandProgress:
     evals: list[float]  # 長さ4のリスト

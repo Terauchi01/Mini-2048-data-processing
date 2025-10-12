@@ -2,11 +2,11 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from .common import GraphData, PlotData
+from .common import GraphData, PlotData, PlayerData
 
 
 def calc_survival_diff_rate_data(
-    state_files: list[Path],
+    player_data_list: list[PlayerData],
 ):
     """
     パーフェクトプレイヤとの生存率の差をプロットする。
@@ -24,7 +24,7 @@ def calc_survival_diff_rate_data(
     result = PlotData(
         x_label="progress",
         y_label="difference in survival rate for PP",
-        data={state_file.parent.name: None for state_file in state_files},
+        data={pd.name: None for pd in player_data_list},
     )
 
     for i in range(max(progresses) + 10):
@@ -32,7 +32,8 @@ def calc_survival_diff_rate_data(
         pp_survival_rate.append(max_value / len(progresses))
     # 上でパーフェクトプレイヤの生存率を計算したので、差を計算する
 
-    for state_file in state_files:
+    for pd in player_data_list:
+        state_file = pd.state_file
         if state_file == pp_state_file:
             continue
         text = state_file.read_text()
@@ -54,14 +55,3 @@ def calc_survival_diff_rate_data(
             y=diff_survival_rate,
         )
     return result
-
-
-if __name__ == "__main__":
-    calc_survival_diff_rate_data(
-        state_files=[
-            Path("board_data/CNN_DEEP/state.txt"),
-            Path("board_data/CNN_DEEP_restart/state.txt"),
-            # Path("NT4/state.txt"),
-        ],
-        output=Path("./output/survival_diff.pdf"),
-    )

@@ -17,8 +17,9 @@ from . import (
     acc_diff,
     scatter_v2,
     evals,
-    progress_eval_accuracy
+    progress_eval_accuracy,
 )
+from .common import PlayerData
 
 BASE_DIR = Path(__file__).resolve().parent
 board_dir = BASE_DIR.parent / "board_data"
@@ -34,46 +35,21 @@ def write_config(path: Path, config: dict) -> None:
     path.write_text(json.dumps(config, indent=4, ensure_ascii=False), "utf-8")
 
 
-class PlayerData:
-    def __init__(self, target_dir: Path):
-        self.name = target_dir.name
-        self.target_dir = target_dir
-        self.pp_dir = self.target_dir.parent / "PP"
-
-    @property
-    def state_file(self):
-        state_file = self.target_dir / "state.txt"
-        if not state_file.exists():
-            raise FileNotFoundError(f"{state_file}が存在しません。")
-        return state_file
-
-    @property
-    def eval_file(self):
-        eval_file = self.target_dir / "eval.txt"
-        if not eval_file.exists():
-            raise FileNotFoundError(f"{eval_file}が存在しません。")
-        return eval_file
-
-    @property
-    def pp_eval_state(self):
-        pp: Path = self.pp_dir / f"eval-state-{self.name}.txt"
-        if not pp.exists():
-            raise FileNotFoundError(f"{pp}が存在しません。")
-        return pp
-
-    @property
-    def pp_eval_after_state(self):
-        pp: Path = self.pp_dir / f"eval-after-state-{self.name}.txt"
-        if not pp.exists():
-            raise FileNotFoundError(f"{pp}が存在しません。")
-        return pp
-
 def get_config():
     if config_path.exists():
         config = read_config(config_path)
         for d in board_data_dirs:
             if d.name not in config:
-                config[d.name] = {"label": d.name, "color": None, "linestyle": "solid"}
+                config[d.name] = {
+                    "label": d.name,
+                    "color": None,
+                    "linestyle": "solid",
+                    "order": 0,
+                }
+        # orderを追記したのでorder keyが存在しない場合
+        for d in config.values():
+            if "order" not in d:
+                d["order"] = 0
     else:
         config = {
             d.name: {"label": d.name, "color": None, "linestyle": "solid"}
@@ -84,25 +60,26 @@ def get_config():
     return config
 
 
-def get_files():
-    is_include_PP = args.graph in ("surv", "surv-diff", "histgram", "evals", "boxplot-eval")
-    
+def get_files(config: dict) -> list[PlayerData]:
+    is_include_PP = args.graph in (
+        "surv",
+        "surv-diff",
+        "histgram",
+        "evals",
+        "boxplot-eval",
+    )
+
     data = [
-        PlayerData(d)
+        PlayerData(d, config)
         for d in board_data_dirs
         if re.search(intersection_match, str(d))
         and not re.search(exclude_match, str(d))
         and (is_include_PP or not re.search("PP", str(d)))
     ]
-    state_files = [d.state_file for d in data]
-    pr_eval_files = [d.eval_file for d in data]
-    
-    if is_include_PP:
-        return [], [], pr_eval_files, state_files
-    
-    pp_eval_files = [d.pp_eval_state for d in data]
-    pp_eval_after_files = [d.pp_eval_after_state for d in data]
-    return pp_eval_files, pp_eval_after_files, pr_eval_files, state_files
+    print(f"対象のディレクトリ数: {len(data)}")
+    # dataをPlayerData.configのorderでソート
+    data.sort(key=lambda pd: pd.config.get("order", 0))
+    return data
 
 
 arg_parser = argparse.ArgumentParser(
@@ -194,94 +171,82 @@ output_dir.mkdir(exist_ok=True)
 
 config_path = BASE_DIR / "config.json"
 config = get_config()
-pp_eval_files, pp_eval_after_files, pr_eval_files, state_files = get_files()
+player_data_list = get_files(config)
 
 if args.graph == "acc":
     output_name = args.output if args.output else "accuracy.pdf"
 
     result = accuracy.calc_accuracy_data(
-        perfect_eval_files=pp_eval_files,
-        player_eval_files=pr_eval_files,
+        player_data_list=player_data_list,
     )
 elif args.graph == "acc-diff":
     output_name = args.output if args.output else "acc-diff.pdf"
 
     result = acc_diff.acc_diff_plot(
-        perfect_eval_files=pp_eval_files,
-        player_eval_files=pr_eval_files,
-        config=config,
+        player_data_list=player_data_list,
     )
 elif args.graph == "err-rel":
     output_name = args.output if args.output else "error_rel.pdf"
 
     result = error_rel.calc_rel_error_data(
-        perfect_eval_files=pp_eval_files,
-        player_eval_files=pr_eval_files,
+        player_data_list=player_data_list,
     )
 elif args.graph == "err-abs":
     output_name = args.output if args.output else "error_abs.pdf"
 
     result = error_abs.calc_abs_error_data(
-        perfect_eval_files=pp_eval_files,
-        player_eval_files=pr_eval_files,
+        player_data_list=player_data_list,
     )
 elif args.graph == "surv":
     output_name = args.output if args.output else "survival.pdf"
 
     result = survival.calc_survival_rate_data(
-        state_files=state_files,
+        player_data_list=player_data_list,
     )
 elif args.graph == "surv-diff":
     output_name = args.output if args.output else "survival-diff.pdf"
 
     result = survival_diff.calc_survival_diff_rate_data(
-        state_files=state_files,
+        player_data_list=player_data_list,
     )
 elif args.graph == "histgram":
     output_name = args.output if args.output else "histgram.pdf"
 
     result = histgram.plot_histgram(
-        state_files=state_files,
+        player_data_list=player_data_list,
         output=output_dir / output_name,
-        config=config,
         is_show=args.is_show,
     )
 elif args.graph == "scatter":
     output_name = args.output if args.output else "scatter.pdf"
 
     result = scatter.plot_scatter(
-        perfect_eval_files=pp_eval_after_files,
-        player_eval_files=pr_eval_files,
+        player_data_list=player_data_list,
         output=output_dir / output_name,
-        config=config,
         is_show=args.is_show,
     )
 elif args.graph == "scatter_v2":
     output_name = args.output if args.output else "scatter.pdf"
 
     result = scatter_v2.plot_scatter(
-        perfect_eval_files=pp_eval_after_files,
-        player_eval_files=pr_eval_files,
+        player_data_list=player_data_list,
         output=output_dir / output_name,
-        config=config,
         is_show=args.is_show,
     )
 elif args.graph == "evals":
     output_name = args.output if args.output else "evals.pdf"
 
     result = evals.calc_eval_data(
-        player_eval_files=pr_eval_files,
+        player_data_list=player_data_list,
         output=output_dir / output_name,
-        config=config,
         is_show=args.is_show,
     )
 elif args.graph == "boxplot-eval":
     output_name = args.output if args.output else "boxplot_eval.pdf"
 
     result = boxplot.plot_boxplot_eval_ratios(
-        player_eval_files=pr_eval_files,
+        player_data_list=player_data_list,
         output=output_dir / output_name,
-        config=config,
         is_show=args.is_show,
         min_progress=args.min_progress,
         max_progress=args.max_progress,
@@ -291,11 +256,9 @@ elif args.graph == "pea":
     output_name = args.output if args.output else "boxplot_pea.pdf"
 
     result = progress_eval_accuracy.create_progress_eval_accuracy_plot(
-        perfect_eval_files=pp_eval_files,
-        player_eval_files=pr_eval_files,
+        player_data_list=player_data_list,
         pp_eval_file=board_dir / "PP" / "eval.txt",
         output=output_dir / output_name,
-        config=config,
         is_show=args.is_show,
         min_progress=args.min_progress,
         max_progress=args.max_progress,
@@ -304,7 +267,11 @@ elif args.graph == "pea":
 
 if result:
     for k, v in result.data.items():
-        plt.plot(v.x, v.y, **config.get(k, {}))
+        # orderというキーを取り除いて
+        config = config.get(k, {})
+        if "order" in config:
+            del config["order"]
+        plt.plot(v.x, v.y, **config)
     handles, labels = plt.gca().get_legend_handles_labels()
     sorted_pairs = sorted(zip(labels, handles), key=lambda x: x[0])
     labels, handles = zip(*sorted_pairs)
@@ -318,4 +285,3 @@ if result:
     )
     if args.is_show:
         plt.show()
-

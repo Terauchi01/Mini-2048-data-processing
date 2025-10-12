@@ -9,6 +9,7 @@ from .common import (
     PlotData,
     get_eval_and_hand_progress,
     moving_average,
+    PlayerData,
 )
 
 
@@ -18,17 +19,16 @@ def calc_accuracy(
 ):
     pp_best_moves = set(pp_ehp.idx)
     pr_best_moves = set(pr_ehp.idx)
-    
+
     # playerの最善手のうち、perfect playerの最善手と一致するものの数
     common_moves = pp_best_moves.intersection(pr_best_moves)
-    
+
     # プレイヤーの最善手総数で割る
     return len(common_moves) / len(pr_ehp.idx)
 
 
 def calc_accuracy_data(
-    perfect_eval_files: list[Path],
-    player_eval_files: list[Path],
+    player_data_list: list[PlayerData],
 ) -> PlotData:
     """
     最善手率をプロットする。
@@ -36,19 +36,17 @@ def calc_accuracy_data(
     result = PlotData(
         x_label="progress",
         y_label="accuracy",
-        data={
-            player_eval_file.parent.name: None for player_eval_file in player_eval_files
-        },
+        data={pd.name: None for pd in player_data_list},
     )
-    for perfect_eval_file, player_eval_file in zip(
-        sorted(perfect_eval_files), sorted(player_eval_files)
-    ):
-        pp_eval_and_hand_progress = get_eval_and_hand_progress(perfect_eval_file)
-        pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
-
-        assert len(pp_eval_and_hand_progress) == len(pr_eval_and_hand_progress), (
-            f"データ数が異なります。{len(pp_eval_and_hand_progress)=}, {len(pr_eval_and_hand_progress)=}"
+    for player_data in player_data_list:
+        pp_eval_and_hand_progress = get_eval_and_hand_progress(
+            player_data.pp_eval_state
         )
+        pr_eval_and_hand_progress = get_eval_and_hand_progress(player_data.eval_file)
+
+        assert len(pp_eval_and_hand_progress) == len(
+            pr_eval_and_hand_progress
+        ), f"データ数が異なります。{len(pp_eval_and_hand_progress)=}, {len(pr_eval_and_hand_progress)=}"
 
         acc_dict = defaultdict(list)
 
@@ -61,19 +59,8 @@ def calc_accuracy_data(
             prg: np.mean(err_list)
             for prg, err_list in sorted(acc_dict.items(), key=lambda x: x[0])
         }
-        result.data[player_eval_file.parent.name] = GraphData(
+        result.data[player_data.name] = GraphData(
             x=moving_average(list(acc.keys()), 10).tolist(),
             y=moving_average(list(acc.values()), 10).tolist(),
         )
     return result
-
-
-if __name__ == "__main__":
-    calc_accuracy_data(
-        perfect_eval_files=[
-            Path("board_data/PP/eval-state-CNN_DEEP.txt"),
-        ],
-        player_eval_files=[
-            Path("board_data/CNN_DEEP/eval.txt"),
-        ],
-    )

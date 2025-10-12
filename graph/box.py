@@ -259,11 +259,14 @@ def create_boxplot_by_progress_range(
 def create_boxplot_by_max_eval(
     eval_and_hand_progress: List[EvalAndHandProgress],
     config: AnalysisConfig,
-    num_bins: int = 10,
+    num_bins: int = 250,
 ):
     """
     設定に基づいて最大評価値を基準にビンに分けて、評価値比率の箱ひげ図を作成する
     """
+    # fontの設定
+    # fontsize
+    plt.rcParams["font.size"] = 15
     # 有効なデータを抽出
     valid_data = []
     for eval_data in eval_and_hand_progress:
@@ -281,15 +284,15 @@ def create_boxplot_by_max_eval(
     max_values = [x[0] for x in valid_data]
     ratios = [x[1] for x in valid_data]
 
-    # 等間隔でビンに分ける
     min_val = min(max_values)
     max_val = max(max_values)
-    bin_edges = np.linspace(min_val, max_val, num_bins + 1)
+    # bin_edges = np.linspace(0, 5500, 50)
+    bin_edges = list(range(0, 5600, 100))
 
     bin_data = []
     bin_labels = []
 
-    for i in range(num_bins):
+    for i in range(56 - 1):
         bin_start = bin_edges[i]
         bin_end = bin_edges[i + 1]
 
@@ -301,36 +304,53 @@ def create_boxplot_by_max_eval(
 
         if bin_ratios:  # 空でないビンのみ追加
             bin_data.append(bin_ratios)
-            bin_labels.append(f"{bin_start:.0f}-{bin_end:.0f}")
+            if bin_end % 1000 == 0:
+                bin_labels.append(f"-{bin_end:.0f}")
+            else:
+                bin_labels.append("")
 
     if not bin_data:
         print("ビンに有効なデータがありません")
         return
+    # 前半と後半に分割
+    mid = len(bin_data) // 2
+    halves = [
+        ("first", bin_data[:mid], bin_labels[:mid], np.array(range(5, 30, 5)), 0),
+        ("second", bin_data[mid:], bin_labels[mid:], np.array(range(30, 55, 5)), -27),
+    ]
 
-    # ファイル名とタイトルを生成
-    output_path = f"{config.output_dir}/boxplot_maxeval_{config.output_suffix}.pdf"
-    title = f"Box Plot of Evaluation Ratios by Max Evaluation Value\n({config.model_name}, {config.ratio_description} Ratio)"
-
-    # 箱ひげ図を作成
-    plt.figure(figsize=(14, 8))
-    plt.boxplot(bin_data, tick_labels=bin_labels)
-    plt.xlabel("Max Evaluation Value Range")
-    plt.ylabel(f"Evaluation Ratio ({config.ratio_description})")
-    # plt.title(title)
-    plt.xticks(rotation=45)
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(output_path)
-    plt.show()
-
-    print(f"箱ひげ図を {output_path} に保存しました")
-    print(f"ビン数: {len(bin_data)}")
-    for i, (label, data) in enumerate(zip(bin_labels, bin_data)):
-        mean_ratio = np.mean(data)
-        std_ratio = np.std(data)
-        print(
-            f"ビン {label}: {len(data)} データポイント, 平均比率: {mean_ratio:.4f}, 標準偏差: {std_ratio:.4f}"
+    for suffix, data_half, labels_half, positions_half, offset in halves:
+        plt.figure(figsize=(8, 3))
+        positions = [i - 0.5 for i in range(1, len(data_half) + 1)]
+        box_plot = plt.boxplot(
+            data_half,
+            positions=positions,
+            showfliers=False,
+            widths=0.8,
         )
+
+        # 軸ラベルやタイトル
+        plt.xticks(positions_half + offset, positions_half * 100)
+        plt.xlabel("Max Evaluation Value")
+        plt.ylabel(f"Ratio ({config.ratio_description})")
+        # plt.title(f"{title} ({suffix})")
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+
+        output_path = (
+            f"{config.output_dir}/boxplot_maxeval_{suffix}_{config.output_suffix}.pdf"
+        )
+        plt.savefig(output_path)
+        plt.show()
+
+        print(f"箱ひげ図 ({suffix}) を {output_path} に保存しました")
+        print(f"ビン数: {len(data_half)}")
+        for i, (label, data) in enumerate(zip(labels_half, data_half)):
+            mean_ratio = np.mean(data)
+            std_ratio = np.std(data)
+            print(
+                f"[{suffix}] ビン {label or i}: {len(data)} データポイント, 平均比率: {mean_ratio:.4f}, 標準偏差: {std_ratio:.4f}"
+            )
 
 
 if __name__ == "__main__":
@@ -340,9 +360,12 @@ if __name__ == "__main__":
         data_file=Path("cp_board_data/PP/eval.txt"),
         # data_file=Path("board_data/[learning-toggle.py][model-DEEP][seed-1][symmetry-True][type-toggle]/eval.txt"),
         # data_file=Path("board_data/[learning-buffer.py][model-DEEP][seed-1][symmetry-True][freq-50]/eval.txt"),
+        # data_file=Path(
+        #     "board_data/[learning-nn.py][model-DEEP][seed-2][symmetry-True]/eval.txt"
+        # ),
         min_progress=0,
         max_progress=250,
-        bin_width=5,
+        bin_width=10,
         ratio_type="min_div_max",  # "min_div_max" or "2nd_max_div_max"
         normalization="off",
         output_dir="output",
@@ -427,7 +450,9 @@ if __name__ == "__main__":
 
         # 最大評価値基準での箱ひげ図を作成
         print("\n2. 最大評価値基準での箱ひげ図を作成中...")
-        create_boxplot_by_max_eval(eval_and_hand_progress, config, num_bins=10)
+        create_boxplot_by_max_eval(
+            eval_and_hand_progress, config
+        )  # configから直接bin_widthを使用
 
         print("\n全ての箱ひげ図の作成が完了しました！")
         print(f"出力ファイル接頭辞: {config.output_suffix}")

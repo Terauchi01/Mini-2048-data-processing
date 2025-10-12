@@ -2,11 +2,11 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from .common import GraphData, PlotData
+from .common import GraphData, PlotData, PlayerData
 
 
 def calc_survival_rate_data(
-    state_files: list[Path],
+    player_data_list: list[PlayerData],
 ) -> PlotData:
     """
     生存率をプロットする。
@@ -14,10 +14,10 @@ def calc_survival_rate_data(
     result = PlotData(
         x_label="progress",
         y_label="survival rate",
-        data={state_file.parent.name: None for state_file in state_files},
+        data={pd.name: None for pd in player_data_list},
     )
-    for state_file in state_files:
-        text = state_file.read_text()
+    for pd in player_data_list:
+        text = pd.state_file.read_text()
         progress_text = re.findall(r"progress: (\d+)", text)
         progresses = [int(progress) for progress in progress_text]
 
@@ -29,20 +29,8 @@ def calc_survival_rate_data(
             max_value -= droped_counter[i]
             survival_rate.append(max_value / len(progresses))
 
-        result.data[state_file.parent.name] = GraphData(
+        result.data[pd.name] = GraphData(
             x=list(range(len(survival_rate))),
             y=survival_rate,
         )
     return result
-
-
-if __name__ == "__main__":
-    calc_survival_rate_data(
-        state_files=[
-            Path("board_data/PP/state.txt"),
-            Path("board_data/CNN_DEEP/state.txt"),
-            Path("board_data/CNN_DEEP_restart/state.txt"),
-            # Path("NT4/state.txt"),
-        ],
-        output=Path("./output/survival.pdf"),
-    )

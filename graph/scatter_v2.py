@@ -4,7 +4,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-from .common import get_eval_and_hand_progress
+from .common import get_eval_and_hand_progress, PlayerData
 
 
 def get_evals(eval_file: Path):
@@ -15,25 +15,21 @@ def get_evals(eval_file: Path):
 
 
 def plot_scatter(
-    perfect_eval_files: list[Path],
-    player_eval_files: list[list[Path]],
+    player_data_list: list[PlayerData],
     output: Path,
     is_show: bool = True,
-    config: dict = {},
 ):
     """
     パーフェクトプレイヤとプレイヤーの評価値の散布図をプロットする。
     """
-    
-    for i, (perfect_eval_file, player_eval_file) in enumerate(
-        zip(sorted(perfect_eval_files), sorted(player_eval_files))
-    ):
-        pp_evals = get_evals(perfect_eval_file)
-        pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
 
-        assert len(pp_evals) == len(pr_eval_and_hand_progress), (
-            f"データ数が異なります。{len(pp_evals)=}, {len(pr_eval_and_hand_progress)=}"
-        )
+    for i, pd in enumerate(player_data_list):
+        pp_evals = get_evals(pd.pp_eval_after_state)
+        pr_eval_and_hand_progress = get_eval_and_hand_progress(pd.eval_file)
+
+        assert len(pp_evals) == len(
+            pr_eval_and_hand_progress
+        ), f"データ数が異なります。{len(pp_evals)=}, {len(pr_eval_and_hand_progress)=}"
 
         scatter_data = [
             (ev, pr_eval.evals[pr_eval.idx[0]])
@@ -47,32 +43,24 @@ def plot_scatter(
             [d[0] for d in scatter_data],
             [d[1] for d in scatter_data],
             s=5,
-            label=config.get(player_eval_file.parent.name, {}).get("label", player_eval_file.parent.name),
+            label=pd.config.get("label", pd.name),
+            color=pd.config.get("color", None),
         )
         # 直線を引く
     plt.plot(
         [0, 6000],
         [0, 6000],
-        color="gray",
+        color="black",
         linestyle="dashed",
-        
     )
     plt.xlabel("perfect")
-    plt.ylabel(
-        "player"
-    )
+    plt.ylabel("player")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(output.with_stem(f"{output.stem}_v2"))
-    print(output.with_stem(f"{output.stem}_v2"))
+    save_path = output.with_stem(f"{output.stem}_v2")
+    plt.savefig(save_path)
+    print(f"{save_path} saved.")
     if is_show:
         plt.show()
     plt.close()
     return None
-
-
-if __name__ == "__main__":
-    plot_scatter(
-        perfect_eval_file=Path("board_data/PP/eval-afterstate-CNN_DEEP.txt"),
-        player_eval_file=Path("board_data/CNN_DEEP/eval.txt"),
-    )

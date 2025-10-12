@@ -10,6 +10,7 @@ from .common import (
     PlotData,
     get_eval_and_hand_progress,
     moving_average,
+    PlayerData,
 )
 
 
@@ -26,9 +27,7 @@ def calc_accuracy(
 
 
 def acc_diff_plot(
-    perfect_eval_files: list[Path],
-    player_eval_files: list[Path],
-    config: dict = {},
+    player_data_list: list[PlayerData],
 ) -> PlotData:
     """
     最善手率の差分を計算し、プロットする。
@@ -39,11 +38,11 @@ def acc_diff_plot(
         data={},
     )
 
-    for perfect_eval_file, player_eval_file in zip(
-        sorted(perfect_eval_files), sorted(player_eval_files)
-    ):
-        pp_eval_and_hand_progress = get_eval_and_hand_progress(perfect_eval_file)
-        pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
+    for player_data in player_data_list:
+        pp_eval_and_hand_progress = get_eval_and_hand_progress(
+            player_data.pp_eval_state
+        )
+        pr_eval_and_hand_progress = get_eval_and_hand_progress(player_data.eval_file)
 
         assert len(pp_eval_and_hand_progress) == len(
             pr_eval_and_hand_progress
@@ -62,30 +61,29 @@ def acc_diff_plot(
             for prg, err_list in sorted(acc_dict.items(), key=lambda x: x[0])
         }
 
-        result.data[player_eval_file.parent.name] = GraphData(
+        result.data[player_data.name] = GraphData(
             x=moving_average(list(acc.keys()), 10).tolist(),  # スムージング
             y=moving_average(list(acc.values()), 10).tolist(),
         )
 
     # 差分を計算
-    sorted_files = sorted(player_eval_files)
 
-    if len(sorted_files) < 2:
-        raise ValueError("少なくとも2つの player_eval_files が必要です。")
+    if len(player_data_list) < 2:
+        raise ValueError("少なくとも2つの player_data_list が必要です。")
 
-    first_key = sorted_files[0].parent.name
-    second_key = sorted_files[1].parent.name
+    first = player_data_list[0]
+    second = player_data_list[1]
 
     result2 = PlotData(
         x_label="progress",
         y_label="accuracy difference",
-        data={first_key + "-" + second_key: GraphData(x=[], y=[])},
+        data={first.name + "-" + second.name: GraphData(x=[], y=[])},
     )
 
-    x_values_first = result.data[first_key].x
-    x_values_second = result.data[second_key].x
-    y_values_first = result.data[first_key].y
-    y_values_second = result.data[second_key].y
+    x_values_first = result.data[first.name].x
+    x_values_second = result.data[second.name].x
+    y_values_first = result.data[first.name].y
+    y_values_second = result.data[second.name].y
 
     diff_x = []
     diff_y = []
@@ -108,7 +106,7 @@ def acc_diff_plot(
             diff_y.append(y1 - y2)
 
     # 結果を保存
-    result2.data[first_key + "-" + second_key] = GraphData(
+    result2.data[first.name + "-" + second.name] = GraphData(
         x=diff_x,
         y=diff_y,
     )
@@ -124,7 +122,7 @@ def acc_diff_plot(
         diff_y,
         c=colors,
         s=10,
-        label=f"{config.get(first_key).get('label')} - {config.get(second_key).get('label')}",
+        label=f"{first.config.get('label')} - {second.config.get('label')}",
     )
     legend_elements = [
         Line2D(
@@ -134,7 +132,7 @@ def acc_diff_plot(
             color="w",
             markerfacecolor="blue",
             markersize=8,
-            label=f"{config.get(first_key).get('label')} > {config.get(second_key).get('label')}",
+            label=f"{first.config.get('label')} > {second.config.get('label')}",
         ),
         Line2D(
             [0],
@@ -143,7 +141,7 @@ def acc_diff_plot(
             color="w",
             markerfacecolor="red",
             markersize=8,
-            label=f"{config.get(second_key).get('label')} > {config.get(first_key).get('label')}",
+            label=f"{second.config.get('label')} > {first.config.get('label')}",
         ),
     ]
     plt.legend(handles=legend_elements)
@@ -162,15 +160,3 @@ def acc_diff_plot(
     # print(f"result2.y: {result2.data[first_key + '-' + second_key].y}")
 
     return None
-
-
-if __name__ == "__main__":
-    acc_diff_plot(
-        perfect_eval_files=[
-            Path("board_data/PP/eval-state-CNN_DEEP.txt"),
-        ],
-        player_eval_files=[
-            Path("board_data/CNN_DEEP/eval.txt"),
-            Path("board_data/OTHER_MODEL/eval.txt"),  # 2つ以上のデータを渡す
-        ],
-    )

@@ -5,9 +5,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .common import get_eval_and_hand_progress
+from .common import get_eval_and_hand_progress, PlayerData
 
 PERFECT_AVG_EVAL = 5468.49  # パーフェクトプレイヤの平均評価値
+
 
 def get_evals(eval_file: Path):
     eval_txt = eval_file.read_text("utf-8")
@@ -17,21 +18,17 @@ def get_evals(eval_file: Path):
 
 
 def plot_scatter(
-    perfect_eval_files: list[Path],
-    player_eval_files: list[Path],
+    player_data_list: list[PlayerData],
     output: Path,
     is_show: bool = True,
-    config: dict = {},
 ):
     """
     パーフェクトプレイヤとプレイヤーの評価値の散布図をプロットする。
     """
-    for i, (perfect_eval_file, player_eval_file) in enumerate(
-        zip(sorted(perfect_eval_files), sorted(player_eval_files))
-    ):
-        pp_evals = get_evals(perfect_eval_file)
-        pr_eval_and_hand_progress = get_eval_and_hand_progress(player_eval_file)
-        eval_txt = player_eval_file.read_text("utf-8")
+    for i, pd in enumerate(player_data_list):
+        pp_evals = get_evals(pd.pp_eval_after_state)
+        pr_eval_and_hand_progress = get_eval_and_hand_progress(pd.eval_file)
+        eval_txt = pd.eval_file.read_text("utf-8")
         # gameoverの行を全て抽出
         gameover_lines = re.findall(r"game.*\n?", eval_txt)
         # gameoverの行からscoreを抽出し、平均得点を算出
@@ -41,9 +38,9 @@ def plot_scatter(
         avg_score = np.mean(gameover_scores) if gameover_scores else 0
         print(f"{avg_score=}")
 
-        assert len(pp_evals) == len(pr_eval_and_hand_progress), (
-            f"データ数が異なります。{len(pp_evals)=}, {len(pr_eval_and_hand_progress)=}"
-        )
+        assert len(pp_evals) == len(
+            pr_eval_and_hand_progress
+        ), f"データ数が異なります。{len(pp_evals)=}, {len(pr_eval_and_hand_progress)=}"
 
         scatter_data = [
             (ev, pr_eval.evals[pr_eval.idx[0]])
@@ -70,22 +67,14 @@ def plot_scatter(
             [avg_score / PERFECT_AVG_EVAL * i for i in range(0, 6001)],
             color="red",
             linestyle="dashed",
-            
         )
         plt.xlabel("perfect")
-        plt.ylabel(
-            config.get(player_eval_file.parent.name, {}).get("label", player_eval_file.parent.name)
-        )
+        plt.ylabel(pd.config.get("label", pd.name))
         plt.tight_layout()
-        plt.savefig(output.with_stem(f"{output.stem}_{player_eval_file.parent.name}"))
+        save_path = output.with_stem(f"{output.stem}_{pd.name}")
+        plt.savefig(save_path)
+        print(f"{save_path} saved.")
         if is_show:
             plt.show()
         plt.close()
     return None
-
-
-if __name__ == "__main__":
-    plot_scatter(
-        perfect_eval_file=Path("board_data/PP/eval-afterstate-CNN_DEEP.txt"),
-        player_eval_file=Path("board_data/CNN_DEEP/eval.txt"),
-    )
