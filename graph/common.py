@@ -4,12 +4,15 @@ from pathlib import Path
 
 import numpy as np
 
+BASE_DIR = Path(__file__).resolve().parent
+board_dir = BASE_DIR.parent / "board_data"
+
 
 class PlayerData:
     def __init__(self, target_dir: Path, config: dict):
         self.name = target_dir.name
         self.target_dir = target_dir
-        self.pp_dir = self.target_dir.parent / "PP"
+        self.pp_dir = board_dir / "PP"
         self.config = config[self.name] if config and self.name in config else {}
 
     @property

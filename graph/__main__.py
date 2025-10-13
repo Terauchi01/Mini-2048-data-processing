@@ -19,10 +19,8 @@ from . import (
     evals,
     progress_eval_accuracy,
 )
-from .common import PlayerData
+from .common import PlayerData, board_dir, BASE_DIR
 
-BASE_DIR = Path(__file__).resolve().parent
-board_dir = BASE_DIR.parent / "board_data"
 board_data_dirs = [d for d in board_dir.iterdir() if d.is_dir()]
 __version__ = "1.5.0"
 
@@ -267,11 +265,10 @@ elif args.graph == "pea":
 
 if result:
     for k, v in result.data.items():
-        # orderというキーを取り除いて
-        config = config.get(k, {})
-        if "order" in config:
-            del config["order"]
-        plt.plot(v.x, v.y, **config)
+        k_config = config.get(k, {})
+        if "order" in k_config:
+            del k_config["order"]
+        plt.plot(v.x, v.y, **k_config)
     handles, labels = plt.gca().get_legend_handles_labels()
     sorted_pairs = sorted(zip(labels, handles), key=lambda x: x[0])
     labels, handles = zip(*sorted_pairs)
@@ -280,8 +277,6 @@ if result:
     plt.ylabel(result.y_label)
     plt.legend(handles, labels)  # ソート後の順番で凡例を設定
     plt.tight_layout()  # 追加：はみ出しを防ぐ
-    plt.savefig(
-        output_dir / output_name,
-    )
+    plt.savefig(output_dir / output_name)
     if args.is_show:
         plt.show()
